@@ -3,8 +3,8 @@
 An interactive birthday celebration and countdown web application.
 
 ## Live Demo
-Once pushed to GitHub and Pages is enabled, your app will be live at:
-`https://<your-username>.github.io/<your-repo-name>/`
+Check out the live site on GitHub Pages:
+**[https://gt-ashish.github.io/Birthday/](https://gt-ashish.github.io/Birthday/)**
 
 ## Features
 - **Secret Passcode Gate**: A fun knock-knock entrance screen.
