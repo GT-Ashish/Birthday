@@ -2,6 +2,10 @@
 
 An interactive birthday celebration and countdown web application.
 
+## Live Demo
+Once pushed to GitHub and Pages is enabled, your app will be live at:
+`https://<your-username>.github.io/<your-repo-name>/`
+
 ## Features
 - **Secret Passcode Gate**: A fun knock-knock entrance screen.
 - **The Door & Countdown**: Interactive door with midnight reveal and celebratory confetti.
@@ -13,3 +17,4 @@ An interactive birthday celebration and countdown web application.
 - HTML5
 - CSS3 (Custom Properties & Animations)
 - JavaScript (Vanilla, Web Audio API, Canvas)
+- GitHub Actions (Automated GitHub Pages deployment)
