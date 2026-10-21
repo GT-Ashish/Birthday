@@ -518,21 +518,27 @@ nav button[aria-current="true"] {
 
 .ctrl {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
 }
 
 .ctrl .btn {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
   padding: 0;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
+}
+
+.ctrl .sk {
+  font-size: 0.8rem;
+  background: var(--blue);
 }
 
 .ctrl .big {
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
+  font-size: 1.4rem;
   background: var(--gold);
 }
 
@@ -556,12 +562,84 @@ input[type="range"] {
   height: 200px;
 }
 
-.songs {
-  text-align: left;
-  padding-left: 1.2em;
+#t-music {
+  max-width: 960px;
 }
 
-.songs a {
+.mgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 820px) {
+  .mgrid {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.queue {
+  position: relative;
+  text-align: left;
+  background: var(--blue2);
+  border: 4px solid var(--plum);
+  border-radius: 24px;
+  padding: 12px;
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+}
+
+.queue h3 {
+  margin: 0.1em 0 0.5em;
+  color: var(--plum);
+}
+
+.queue ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.queue li button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 6px;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.queue li.cur button {
+  border-color: var(--plum);
+  background: var(--gold);
+}
+
+.queue img {
+  width: 64px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex: none;
+  background: var(--blue);
+}
+
+.queue .t {
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.queue .tag {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--plum);
 }
 

@@ -6,20 +6,6 @@
 const PASSWORD = "fish";
 const BIRTHDAY = new Date(2026, 9, 23, 0, 0, 0); // 23 Oct 2026, 12:00 am (visitor’s local time)
 const YT_PLAYLIST = "PLRFTrQY8fGBU"; // Paste your YouTube playlist ID here (the part after list=)
-const SONGS = [
-  "Maand",
-  "Dooron Dooron",
-  "Jhol",
-  "Baarishein",
-  "Alfaaz",
-  "Barsaat",
-  "Paro",
-  "Kaise Hua",
-  "Tera Ban Jaunga",
-  "Bekhayali",
-  "Pehla Pyaar",
-  "Tujhe Kitna Chahne Lage"
-];
 /* ====================== */
 
 // Helpers & Storage
@@ -35,7 +21,7 @@ const store = {
   set(k, v) {
     try {
       localStorage.setItem(k, v);
-    } catch (e) { }
+    } catch (e) {}
   }
 };
 const esc = (s) =>
@@ -161,7 +147,7 @@ function startAudio() {
     AU.out.connect(AU.ctx.destination);
     setInterval(sched, 80);
     bg();
-  } catch (e) { }
+  } catch (e) {}
 }
 
 $("#mute").addEventListener("click", (e) => {
@@ -326,7 +312,7 @@ function planner(root, key, ph) {
   let days = [];
   try {
     days = JSON.parse(store.get(key) || "[]");
-  } catch (e) { }
+  } catch (e) {}
 
   const save = () => store.set(key, JSON.stringify(days));
 
@@ -348,11 +334,11 @@ function planner(root, key, ph) {
       <div class="day">
         <h3>${esc(d.t)}<button class="x" data-a="rmd" data-i="${i}" aria-label="Remove day">×</button></h3>
         <ul>${d.items
-              .map(
-                (it, j) =>
-                  `<li>${esc(it)}<button class="x" data-a="rmi" data-i="${i}" data-j="${j}" aria-label="Remove item">×</button></li>`
-              )
-              .join("")}</ul>
+          .map(
+            (it, j) =>
+              `<li>${esc(it)}<button class="x" data-a="rmi" data-i="${i}" data-j="${j}" aria-label="Remove item">×</button></li>`
+          )
+          .join("")}</ul>
         <div class="add">
           <input data-in="${i}" placeholder="Add a plan or place" aria-label="Add plan">
           <button class="btn sm" data-a="item" data-i="${i}">Add</button>
@@ -511,17 +497,14 @@ $("#play").addEventListener("click", () => {
 });
 
 /* ==========================================================
-   Music Corner & YouTube API
+   Music Corner & YouTube API (with Queue Support)
    ========================================================== */
-$("#songs").innerHTML = SONGS.map(
-  (s) =>
-    `<li>${esc(s)} · <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(
-      s
-    )}" target="_blank" rel="noopener">find on YouTube</a></li>`
-).join("");
-
 let yp = null;
 let playing = false;
+let ids = [];
+let titles = {};
+let tried = {};
+let resumeT = 0;
 
 if (!YT_PLAYLIST) {
   $("#nopl").hidden = false;
@@ -531,23 +514,86 @@ if (!YT_PLAYLIST) {
   document.head.appendChild(s);
 }
 
+function renderQueue() {
+  if (!ids.length) return;
+  const cur = yp.getPlaylistIndex ? yp.getPlaylistIndex() : -1;
+  $("#queue").hidden = false;
+  $("#q").innerHTML = ids
+    .map((id, i) => {
+      const tag =
+        i === cur
+          ? '<span class="tag">Now playing</span>'
+          : i === cur + 1
+          ? '<span class="tag">Next</span>'
+          : "";
+      return `<li class="${i === cur ? "cur" : ""}"><button data-i="${i}"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy"><span class="t">${tag}${esc(
+        titles[id] || "Song " + (i + 1)
+      )}</span></button></li>`;
+    })
+    .join("");
+  const c = $("#q .cur");
+  if (c) $("#queue").scrollTop = Math.max(0, c.offsetTop - 70);
+}
+
+function loadQueue() {
+  if (!yp || !yp.getPlaylist) return;
+  const l = yp.getPlaylist();
+  if (l && l.length && l.join() !== ids.join()) {
+    ids = l;
+    try {
+      yp.setLoop(true);
+    } catch (e) {}
+    ids.forEach((id) => {
+      if (!titles[id] && !tried[id]) {
+        tried[id] = 1;
+        fetch(
+          "https://www.youtube.com/oembed?format=json&url=" +
+            encodeURIComponent("https://www.youtube.com/watch?v=" + id)
+        )
+          .then((r) => r.json())
+          .then((j) => {
+            titles[id] = j.title;
+            renderQueue();
+          })
+          .catch(() => {});
+      }
+    });
+  }
+  renderQueue();
+}
+
 window.onYouTubeIframeAPIReady = () => {
   yp = new YT.Player("ytp", {
     height: "200",
     width: "200",
     playerVars: { listType: "playlist", list: YT_PLAYLIST, playsinline: 1, controls: 0 },
     events: {
-      onReady: () => yp.setVolume(70),
+      onReady: () => {
+        yp.setVolume(70);
+        loadQueue();
+        setTimeout(loadQueue, 1500);
+      },
       onStateChange: (e) => {
         playing = e.data === 1;
-        ytOn = playing;
-        bg();
         $("#vinyl").classList.toggle("on", playing);
         $("#pp").textContent = playing ? "⏸" : "▶";
-        if (e.data === 1) {
+        clearTimeout(resumeT);
+        if (playing) {
+          ytOn = true;
+          bg();
           const d = yp.getVideoData();
-          $("#np").textContent = d && d.title ? d.title : "Playing…";
+          const idx = yp.getPlaylistIndex ? yp.getPlaylistIndex() : -1;
+          if (d && d.title) {
+            $("#np").textContent = d.title;
+            if (ids[idx]) titles[ids[idx]] = d.title;
+          }
+        } else {
+          resumeT = setTimeout(() => {
+            ytOn = false;
+            bg();
+          }, 5000); // Lullaby waits 5 seconds after music stops
         }
+        loadQueue();
       }
     }
   });
@@ -560,6 +606,19 @@ $("#pp").addEventListener("click", () => {
 
 $("#next").addEventListener("click", () => yp && yp.nextVideo && yp.nextVideo());
 $("#prev").addEventListener("click", () => yp && yp.previousVideo && yp.previousVideo());
+
+const jump = (d) => {
+  if (yp && yp.getCurrentTime) yp.seekTo(Math.max(0, yp.getCurrentTime() + d), true);
+};
+
+$("#back10").addEventListener("click", () => jump(-10));
+$("#fwd10").addEventListener("click", () => jump(10));
+
+$("#q").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-i]");
+  if (b && yp && yp.playVideoAt) yp.playVideoAt(+b.dataset.i);
+});
+
 $("#vol").addEventListener("input", (e) => yp && yp.setVolume && yp.setVolume(+e.target.value));
 $("#seek").addEventListener("input", (e) => {
   if (yp && yp.getDuration) yp.seekTo((yp.getDuration() * e.target.value) / 100, true);
