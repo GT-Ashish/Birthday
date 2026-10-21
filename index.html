@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Shreety’s Waiting Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="b" viewBox="0 0 40 40">
+      <path d="M18 20 2 8v24zM22 20l16-12v24z"/>
+      <circle cx="20" cy="20" r="5"/>
+    </symbol>
+  </svg>
+  <svg class="bow" style="top:12%;left:6%;fill:var(--plum);transform:rotate(-15deg)"><use href="#b"/></svg>
+  <svg class="bow" style="bottom:10%;right:7%;transform:rotate(12deg)"><use href="#b"/></svg>
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <div id="gate">
+    <h1>Knock knock…</h1>
+    <p>Who’s there? Whisper the secret word, Shreety.</p>
+    <form id="gf">
+      <input id="pw" type="password" autocomplete="off" aria-label="Secret word" placeholder="Secret word">
+      <button class="btn" type="submit">Knock</button>
+    </form>
+    <div id="err" role="alert"></div>
+  </div>
+
+  <div id="app" hidden>
+    <nav id="nav">
+      <button data-t="door" aria-current="true">The Door</button>
+      <button data-t="sikkim">Sikkim Trip</button>
+      <button data-t="home">Home Plans</button>
+      <button data-t="game">Cake Game</button>
+      <button data-t="music">Music Corner</button>
+    </nav>
+    <button class="btn" id="mute" aria-label="Mute music">🔊</button>
+
+    <section class="wrap fit" id="t-door">
+      <h1>Please wait outside</h1>
+      <p class="sub">You made me wait outside my room. Now you wait outside yours.</p>
+      <div class="scene">
+        <div class="deco" id="deco">
+          <span class="peek" style="left:-28px;top:-14px">🎈</span>
+          <span class="peek" style="right:-28px;top:22%;animation-delay:.8s">🎀</span>
+          <span class="peek" style="left:-24px;bottom:8%;animation-delay:1.4s">🎉</span>
+        </div>
+        <div class="room">
+          <h2>Happy Birthday, Shreety!</h2>
+          <p>You’re 23 now. Come on in.</p>
+        </div>
+        <div class="door" id="door">
+          <div class="sign">Decorating in progress<small>No peeking!</small></div>
+          <div class="knob"></div>
+        </div>
+      </div>
+      <div class="mat">Welcome (after you wait)</div>
+      <div class="cd" id="cd"></div>
+      <p class="hint" id="cdmsg">until the door opens at midnight</p>
+    </section>
+
+    <section class="wrap" id="t-sikkim" hidden>
+      <h2>Sikkim itinerary</h2>
+      <p class="hint">Add days and the places or plans for each one.</p>
+      <div id="p-sikkim"></div>
+    </section>
+
+    <section class="wrap" id="t-home" hidden>
+      <h2>When I’m back home</h2>
+      <p class="hint">What shall we do when I come home?</p>
+      <div id="p-home"></div>
+    </section>
+
+    <section class="wrap fit" id="t-game" hidden>
+      <h2>Catch the cake</h2>
+      <p class="hint">Catch fries, cake, watermelon and ice cream. Dodge the bugs. Drag or use arrow keys.</p>
+      <canvas id="gc" width="320" height="420"></canvas>
+      <p><b id="sc">Score: 0</b> · <span id="bs">Best: 0</span></p>
+      <button class="btn" id="play">Play (30 seconds)</button>
+    </section>
+
+    <section class="wrap" id="t-music" hidden>
+      <h2>Music corner</h2>
+      <div class="player">
+        <div class="vinyl" id="vinyl"><i>♥</i></div>
+        <div id="np">Press play when you’re ready</div>
+        <input type="range" id="seek" min="0" max="100" value="0" aria-label="Seek">
+        <div class="ctrl">
+          <button class="btn" id="prev" aria-label="Previous">⏮</button>
+          <button class="btn big" id="pp" aria-label="Play or pause">▶</button>
+          <button class="btn" id="next" aria-label="Next">⏭</button>
+        </div>
+        <p class="hint">Volume</p>
+        <input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume">
+      </div>
+      <div id="yt"><div id="ytp"></div></div>
+      <p class="hint" id="nopl" hidden>The playlist isn’t connected yet. Ask Shreety’s friend to add it!</p>
+      <h3>Shreety’s songs</h3>
+      <ul class="songs" id="songs"></ul>
+    </section>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
