@@ -384,7 +384,7 @@ let stage = null;
 const HINTS = {
   dark: "The door swung open. It’s dark in there… pull the lamp cord! 💡",
   lit: "Lights on! Now untie the big red bow 🎀 (drag it or tap it)",
-  open: "Surprise! Tap the candles to blow them out 🎂"
+  open: "Surprise! Tap the candles to blow them out (and pop those poppers 🎉) 🎂"
 };
 function sfx(a){ if (!AU.ctx || AU.muted) return; a.forEach((x, i) => tone(x[0], AU.ctx.currentTime + i * 0.09, x[1], "triangle", 0.12)); }
 function setStage(s, quiet){
@@ -394,7 +394,7 @@ function setStage(s, quiet){
 }
 function enterRoom(){
   if (!ins.hidden) return;
-  $("#outside").hidden = true; ins.hidden = false; $("#t-door").classList.add("inroom");
+  $("#outside").hidden = true; ins.hidden = false; if (PREVIEW || !store.get("navok")) $("#nav").hidden = true; $("#t-door").classList.add("inroom");
   const saved = PREVIEW ? null : store.get("rstage");
   setStage(saved || "dark", true);
 }
@@ -434,7 +434,7 @@ document.querySelectorAll(".cdl").forEach((cd) => cd.addEventListener("click", (
   if (stage !== "open") return;
   const f = cd.querySelector(".fl"); if (f.classList.contains("off")) return;
   f.classList.add("off"); blown++;
-  if (blown === 2) { burst(160); $("#inshint").textContent = "Happy Birthday, Shreety! 🎂 Now make a wish (see the Make a Wish tab)"; $("#relight").hidden = false; track("cake", "candles blown out"); }
+  if (blown === 2) { burst(160); $("#inshint").textContent = "Happy Birthday, Shreety! 🎂 Close your eyes and make a wish ✨"; $("#relight").hidden = false; track("cake", "candles blown out"); }
 }));
 $("#relight").addEventListener("click", () => { document.querySelectorAll(".fl").forEach((f) => f.classList.remove("off")); blown = 0; $("#relight").hidden = true; $("#inshint").textContent = HINTS.open; });
 
@@ -446,3 +446,310 @@ function hb(){
 }
 document.addEventListener("visibilitychange", hb);
 document.addEventListener("pointerdown", hb, {passive: true});   // retries if the browser blocked autoplay after a refresh
+
+
+/* Party decor: photo balloons, long curly ribbons, gifts, sparkles */
+(() => {
+  const room = document.querySelector(".roomv");
+  const B = [["bnA",14,16,30],["hk2",2,8,28],["b3",1,38,26],["b7",24,40,24],["hk3",9,48,22],["b1",25,8,20],
+             ["kf",75,12,38],["k1",89,40,26],["b5",67,42,22],["hk4",60,6,20],["hk5",90,8,22],["b2",82,50,20]];
+  $("#balloons").innerHTML = B.map((b, i) => `<img class="bi" src="balloons/${b[0]}.png" alt="" style="--l:${b[1]}%;--t:${b[2]}%;--s:${b[3]};--dl:${(i * .18).toFixed(2)}s">`).join("");
+  $("#balloons").addEventListener("click", (e) => { const b = e.target.closest(".bi"); if (!b || b.classList.contains("pop")) return; b.classList.add("pop"); sfx([[1500, .04], [900, .06]]); burst(25); setTimeout(() => b.remove(), 320); });
+  const RC = ["#FF9EC4","#F5B94A","#3FB7A5","#c9a0ff","#D7263D","#BFE3F5","#FF9EC4","#F5B94A"];
+  const curl = (amp, w) => { let d = ""; for (let i = 0; i <= 90; i++) { const t = i / 90, p = t * w; d += (i ? "L" : "M") + (20 + amp * Math.sqrt(t) * Math.sin(p)).toFixed(1) + " " + (190 * t + amp * .7 * Math.cos(p) - amp * .7).toFixed(1); } return d; };
+  const X = [2,8,14,20,78,84,90,97], S = [55,42,60,38,40,58,44,52];
+  room.insertAdjacentHTML("beforeend", X.map((x, i) => `<svg class="rib" viewBox="0 0 40 200" style="left:${x}%;--s:${S[i]};--d:${(i * .13).toFixed(2)}s"><path d="${curl(11 + i % 3 * 2, 34 + i % 4 * 4)}" stroke="${RC[i]}"/></svg>`).join(""));
+  const G = [["🎁",3,"13%"],["🎀",9,"12%"],["🎁",84,"13%"],["🎁",91,"12%"]];
+  room.insertAdjacentHTML("beforeend", G.map((g) => `<span class="gift" style="--l:${g[1]}%;--b:${g[2]}">${g[0]}</span>`).join(""));
+  let sp = ""; for (let i = 0; i < 12; i++) sp += `<span class="spk" style="--l:${6 + i * 8 + (i % 3) * 2}%;--t:${8 + (i * 37) % 55}%;--d:${(i * .23).toFixed(2)}s">✨</span>`;
+  room.insertAdjacentHTML("beforeend", sp);
+})();
+
+
+/* Party v4: HAPPY BIRTHDAY banner, poppers, cake cutting, nav returns at the end */
+(() => {
+  const room = document.querySelector(".roomv"), T = "HAPPY BIRTHDAY", W = [...T].map((ch) => ch === " " ? .5 : 1), tot = W.reduce((a, b) => a + b, 0);
+  const cols = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#8A9A3B", "#6EC6F0"]; let cum = 0, li = 0;
+  $("#bunt").innerHTML = `<div class="bn"><svg viewBox="0 0 100 110" preserveAspectRatio="none"><path d="M0 2Q50 80 100 2"/></svg><div class="bnf">${[...T].map((ch, i) => {
+    const u = 2 * (cum + W[i] / 2) / tot - 1; cum += W[i]; const y = ((1 - u * u) * 38 + 2).toFixed(1);
+    return ch === " " ? '<span class="fl2 sp"></span>' : `<span class="fl2" style="--i:${i};--y:${y}px;--c:${cols[li++ % 6]}">${ch}</span>`; }).join("")}</div></div>`;
+
+  const cvs = $("#fx");
+  function popSfx(){ if (!AU.ctx || AU.muted) return; const c = AU.ctx, b = c.createBuffer(1, c.sampleRate * .15, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); const s = c.createBufferSource(), g = c.createGain(); g.gain.value = .5; s.buffer = b; s.connect(g); g.connect(AU.out); s.start(); }
+  function popper(el, dir){
+    popSfx(); el.classList.remove("fired"); void el.offsetWidth; el.classList.add("fired");
+    if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+    const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .25, pc = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#D7263D", "#BFE3F5"];
+    for (let i = 0; i < 70; i++) { const a = (-90 + dir * Math.random() * 55) * Math.PI / 180, sp = 9 + Math.random() * 10; parts.push({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c: pc[i % 6], l: 120 + Math.random() * 50, r: 3 + Math.random() * 4}); }
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  room.insertAdjacentHTML("beforeend", [[3, 1], [11, 1], [89, -1], [81, -1]].map((p) => `<button class="pp" style="--l:${p[0]}%;--f:${p[1]}" data-d="${p[1]}" aria-label="Pop the party popper">🎉</button>`).join(""));
+  room.addEventListener("click", (e) => { const b = e.target.closest(".pp"); if (b) popper(b, +b.dataset.d); });
+
+  /* Buttons row: cut cake, light again, continue */
+  const acts = document.createElement("div"); acts.id = "acts";
+  acts.innerHTML = '<button class="btn alt sm" id="cutbtn" hidden>Cut the cake 🍰</button><button class="btn sm" id="goon" hidden>Continue 💖</button>';
+  ins.appendChild(acts); acts.insertBefore($("#relight"), $("#goon"));
+  document.querySelectorAll(".cdl").forEach((cd) => cd.addEventListener("click", () => { if (blown >= 2 && stage === "open") $("#cutbtn").hidden = false; }));
+
+  let cuts = 0; const MAXC = 6, SLOT = [3, 12, 21, 74, 83, 92];
+  const SL = '<svg class="slc" viewBox="0 0 100 90"><ellipse cx="50" cy="80" rx="46" ry="9" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="54" width="60" height="22" rx="4" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="34" width="60" height="22" rx="4" fill="#F5B94A" stroke="#4A2A6B" stroke-width="3"/><path d="M20 38q7 10 14 0t13 0t13 0t14 0v-8H20z" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><circle cx="50" cy="24" r="7" fill="#D7263D" stroke="#4A2A6B" stroke-width="3"/></svg>';
+  function cutCake(){
+    if (cuts >= MAXC) return;
+    const cake = document.querySelector(".cakev"), cr = cake.getBoundingClientRect(), rr = room.getBoundingClientRect();
+    const k = document.createElement("span"); k.className = "knife"; k.textContent = "🔪"; k.style.left = cr.left - rr.left + cr.width / 2 + "px"; k.style.top = cr.top - rr.top + "px"; room.appendChild(k);
+    k.animate([{transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0}, {opacity: 1, offset: .25}, {transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1}], {duration: 650, easing: "ease-in"}).onfinish = () => k.remove();
+    setTimeout(() => {
+      const x = 172 - cuts * 22, ln = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      ln.setAttribute("d", `M${x} 112V174` + (x < 154 && x > 46 ? `M${x} 64V112` : "")); ln.setAttribute("stroke", "#4A2A6B"); ln.setAttribute("stroke-width", "4"); ln.setAttribute("fill", "none"); cake.appendChild(ln);
+      room.insertAdjacentHTML("beforeend", SL.replace('class="slc"', `class="slc" style="--l:${SLOT[cuts]}%"`)); const el = room.lastElementChild;
+      const er = el.getBoundingClientRect(), ex = er.left + er.width / 2, ey = er.top + er.height / 2, dx = cr.left + cr.width / 2 - ex, dy = cr.top + cr.height * .6 - ey, mx = rr.left + rr.width / 2 - ex, my = rr.top + rr.height * .5 - ey;
+      el.animate([{transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65}, {transform: "none", opacity: 1}], {duration: 1700, easing: "ease-in-out"});
+      sfx([[660, .08], [880, .1]]); setTimeout(() => burst(40), 800);
+    }, 450);
+    cuts++; $("#goon").hidden = false;
+    $("#inshint").textContent = cuts >= MAXC ? "The whole cake is gone! 😋" : "Yum! Cut as many slices as you like 🍰";
+    if (cuts >= MAXC) $("#cutbtn").hidden = true;
+  }
+  $("#cutbtn").addEventListener("click", cutCake);
+  $("#goon").addEventListener("click", () => { $("#nav").hidden = false; if (!PREVIEW) store.set("navok", "1"); $("#goon").hidden = true; $("#inshint").textContent = "The party’s all yours, Shreety! Explore the tabs up top 💖"; burst(120); track("room", "party finished"); });
+})();
+
+
+/* Party v5 */
+(() => {
+  const room = document.querySelector(".roomv"), NS = "http://www.w3.org/2000/svg";
+
+  /* 1. Better party poppers, raised */
+  const PS = '<svg viewBox="0 0 64 64" aria-hidden="true">'
+    + '<path d="M31 30Q40 20 33 12Q27 6 35 2" fill="none" stroke="#3FB7A5" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M36 34Q50 30 52 20Q53 14 60 14" fill="none" stroke="#F5B94A" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M5 59 20 22 42 44Z" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3" stroke-linejoin="round"/>'
+    + '<path d="M10.3 46 18 53.8M14.8 35 29 49.3" stroke="#F5B94A" stroke-width="4" stroke-linecap="round"/>'
+    + '<ellipse cx="31" cy="33" rx="15.5" ry="5" transform="rotate(45 31 33)" fill="#fff" stroke="#4A2A6B" stroke-width="3"/>'
+    + '<circle cx="44" cy="12" r="2.6" fill="#c9a0ff"/><circle cx="52" cy="30" r="2.4" fill="#FF9EC4"/><circle cx="24" cy="8" r="2.4" fill="#F5B94A"/><circle cx="58" cy="24" r="2" fill="#3FB7A5"/></svg>';
+  const PL = [2.5, 8, 93, 87.5];
+  room.querySelectorAll(".pp").forEach((b, i) => { b.innerHTML = PS; b.style.setProperty("--l", PL[i] + "%"); if (i % 2) b.classList.add("in"); });
+
+  /* 2. Spread ribbons so they stop touching the banner */
+  const XR = [2, 7, 12, 16, 82, 86, 91, 96];
+  room.querySelectorAll(".rib").forEach((r, i) => { if (XR[i] != null) r.style.left = XR[i] + "%"; });
+
+  /* 3. Gifts: tap -> middle finger pops out */
+  const GL = [1.5, 7.5, 88, 93];
+  room.querySelectorAll(".gift").forEach((g, i) => { g.style.setProperty("--l", GL[i] + "%"); g.setAttribute("role", "button"); g.tabIndex = 0; g.setAttribute("aria-label", "Open the gift"); });
+  function giftPop(g){
+    const r = g.getBoundingClientRect(), rr = room.getBoundingClientRect();
+    const f = document.createElement("span"); f.className = "fng"; f.textContent = "🖕";
+    f.style.left = r.left - rr.left + r.width / 2 + "px"; f.style.top = r.top - rr.top + "px"; room.appendChild(f);
+    f.animate([{transform: "translate(-50%,-30%) scale(.2) rotate(-20deg)", opacity: 0},
+               {transform: "translate(-50%,-160%) scale(1.5) rotate(8deg)", opacity: 1, offset: .35},
+               {transform: "translate(-50%,-200%) scale(1.5) rotate(-6deg)", opacity: 1, offset: .75},
+               {transform: "translate(-50%,-260%) scale(1.2)", opacity: 0}], {duration: 1500, easing: "ease-out"}).onfinish = () => f.remove();
+    g.animate([{transform: "rotate(0)"}, {transform: "rotate(-14deg) scale(1.2)"}, {transform: "rotate(10deg) scale(1.1)"}, {transform: "none"}], {duration: 350});
+    sfx([[330, .07], [220, .12]]); track("gift", "tapped");
+  }
+  room.addEventListener("click", (e) => { const g = e.target.closest(".gift"); if (g) giftPop(g); });
+  room.addEventListener("keydown", (e) => { const g = e.target.closest && e.target.closest(".gift"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); giftPop(g); } });
+
+  /* 4. Cake that really disappears where it is cut */
+  const cake = room.querySelector(".cakev");
+  const mk = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const mask = mk("mask", {id: "cakemask", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 200, height: 190});
+  mask.appendChild(mk("rect", {x: 0, y: 0, width: 200, height: 190, fill: "#fff"}));
+  const defs = mk("defs", {}); defs.appendChild(mask); cake.insertBefore(defs, cake.firstChild);
+  const grp = mk("g", {mask: "url(#cakemask)"});
+  [...cake.children].filter((n) => /^(rect|path)$/i.test(n.tagName)).forEach((n) => grp.appendChild(n));
+  cake.insertBefore(grp, cake.querySelector(".cdl"));
+  const cdls = cake.querySelectorAll(".cdl");
+
+  /* swap in a fresh button so the old cutting code no longer runs */
+  const oldBtn = $("#cutbtn"), nb = oldBtn.cloneNode(true); oldBtn.replaceWith(nb);
+  let cuts = 0, L = 18, R = 182; const MAXC = 6, STEP = 164 / MAXC, SLOT = [18, 29, 40, 51, 62, 73];
+  const SL = '<svg class="slc" viewBox="0 0 100 90"><ellipse cx="50" cy="80" rx="46" ry="9" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="54" width="60" height="22" rx="4" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="34" width="60" height="22" rx="4" fill="#F5B94A" stroke="#4A2A6B" stroke-width="3"/><path d="M20 38q7 10 14 0t13 0t13 0t14 0v-8H20z" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><circle cx="50" cy="24" r="7" fill="#D7263D" stroke="#4A2A6B" stroke-width="3"/></svg>';
+  function cutCake(){
+    if (cuts >= MAXC) return;
+    const cr = cake.getBoundingClientRect(), rr = room.getBoundingClientRect(), fromRight = cuts % 2 === 0;
+    const sx = cr.left + cr.width * ((fromRight ? R - STEP / 2 : L + STEP / 2) / 200);
+    const k = document.createElement("span"); k.className = "knife"; k.textContent = "🔪";
+    k.style.left = sx - rr.left + "px"; k.style.top = cr.top - rr.top + cr.height * .3 + "px"; room.appendChild(k);
+    k.animate([{transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0}, {opacity: 1, offset: .25}, {transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1}], {duration: 650, easing: "ease-in"}).onfinish = () => k.remove();
+    const myCut = cuts; cuts++;
+    setTimeout(() => {
+      /* remove that part of the cake */
+      if (fromRight) { const x1 = R - STEP; mask.appendChild(mk("rect", {x: x1, y: 0, width: 260, height: 190, fill: "#000"})); R = x1; }
+      else { const x2 = L + STEP; mask.appendChild(mk("rect", {x: -60, y: 0, width: x2 + 60, height: 190, fill: "#000"})); L = x2; }
+      if (L > 68) cdls[0].style.display = "none";
+      if (R < 130) cdls[1].style.display = "none";
+      /* the slice flies to the middle, then onto the table */
+      room.insertAdjacentHTML("beforeend", SL.replace('class="slc"', `class="slc" style="--l:${SLOT[myCut]}%"`)); const el = room.lastElementChild;
+      const er = el.getBoundingClientRect(), ex = er.left + er.width / 2, ey = er.top + er.height / 2, dx = sx - ex, dy = cr.top + cr.height * .6 - ey, mx = rr.left + rr.width / 2 - ex, my = rr.top + rr.height * .45 - ey;
+      el.animate([{transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65}, {transform: "none", opacity: 1}], {duration: 1700, easing: "ease-in-out"});
+      sfx([[660, .08], [880, .1]]); setTimeout(() => burst(40), 800);
+    }, 450);
+    $("#goon").hidden = false;
+    $("#inshint").textContent = cuts >= MAXC ? "The whole cake is gone! 😋" : "Yum! Cut as many slices as you like 🍰";
+    if (cuts >= MAXC) nb.hidden = true;
+  }
+  nb.addEventListener("click", cutCake);
+})();
+
+
+/* Letter v6: envelope -> opens -> letter types out word by word */
+(() => {
+  const SIGN = "";
+  const MSG = `Do you know..?
+
+today is just special
+
+so special to you
+
+that's why
+
+Let's make it...
+
+the best celebration ever
+
+and let me share...
+
+a piece of happiness to you
+
+I made all this...
+
+as a birthday present to you
+
+thanks for being there
+
+thanks for the friendship we made
+
+thanks for everything
+
+I wish you all the best
+
+May your life be at ease
+
+May all your wishes come true
+
+Remember
+
+your ambitions
+
+you live as a free bird...
+
+flying in the blue sky
+
+Now things are different
+
+real story of your life
+
+is just about to begin
+
+indeed...
+
+this life is not easy as we thought
+
+but...
+
+Don't worry
+
+don't be afraid
+
+because...
+
+you are not alone in this world
+
+because...
+
+this year will be better
+
+and I hope
+
+you'll find...
+
+happiness along the way
+
+keep your spirits up
+
+enjoy every single moment...
+
+that you experience today
+
+fill it with your most beautiful smile
+
+and make it the best memory...
+
+lastly...
+
+I'd like to wish you one more time
+
+~a very happy birthday 🎂❤️`;
+
+  document.body.insertAdjacentHTML("beforeend",
+    '<div id="lt" role="dialog" aria-modal="true" aria-label="A letter for Shreety"><div class="ltst" id="ltst">'
+    + '<div class="eb"></div>'
+    + '<div class="ep"><button class="ltx" id="ltx" aria-label="Close letter">×</button><div class="pc" id="ltc"></div><div class="pf"><button class="btn sm alt" id="ltb">Skip ⏩</button></div></div>'
+    + '<svg class="ef" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true"><polygon points="2,2 150,105 2,198" fill="#ff9ec4"/><polygon points="298,2 150,105 298,198" fill="#ff9ec4"/><polygon points="2,198 150,100 298,198" fill="#ffc2dc"/></svg>'
+    + '<svg class="fp" viewBox="0 0 300 105" preserveAspectRatio="none" aria-hidden="true"><polygon points="2,2 298,2 150,103" fill="#ff86b6"/></svg>'
+    + '<span class="seal" aria-hidden="true">💖</span></div></div>');
+  const lt = $("#lt"), st = $("#ltst"), ltc = $("#ltc"), ltb = $("#ltb");
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* build the letter */
+  const words = [];
+  ltc.innerHTML = "<h3>For Shreety 💌</h3>";
+  MSG.trim().split(/\n\s*\n/).forEach((para) => {
+    const p = document.createElement("p"); p.style.display = "none";
+    let txt = para.trim(); if (txt[0] === "~") { txt = txt.slice(1); p.className = "em"; }
+    txt.split(/\s+/).forEach((w) => {
+      const s = document.createElement("span"), m = w.match(/^\*(.+?)\*(.*)$/);
+      s.className = "w" + (m ? " i" : ""); s.textContent = (m ? m[1] + m[2] : w) + " ";
+      p.appendChild(s); words.push({s, p});
+    });
+    ltc.appendChild(p);
+  });
+  if (SIGN) { const sg = document.createElement("p"); sg.className = "sg"; sg.textContent = SIGN; ltc.appendChild(sg); }
+
+  let seen = false, running = false, ti = 0, tm = 0, timers = [], mode = "type";
+  const reveal = (w) => { w.p.style.display = ""; w.s.classList.add("on"); };
+  const showAll = () => { words.forEach(reveal); ti = words.length; };
+  function finish(){ mode = "done"; ltb.textContent = "Close 💖"; burst(90); }
+  function step(){
+    if (ti >= words.length) { finish(); return; }
+    const w = words[ti++]; reveal(w); ltc.scrollTop = ltc.scrollHeight;
+    const t = w.s.textContent.trim(), lastInP = ti >= words.length || words[ti].p !== w.p;
+    tm = setTimeout(step, 65 + (/[.!?]$/.test(t) ? 330 : /,$/.test(t) ? 140 : 0) + (lastInP ? 500 : 0));
+  }
+  function openLetter(instant){
+    if (running) return; running = true; seen = true;
+    timers.forEach(clearTimeout); clearTimeout(tm); timers = [];
+    st.className = "ltst"; lt.classList.add("on");
+    if (instant || reduce) {
+      showAll(); finish(); st.classList.add("read", "opened", "rise"); ltc.scrollTop = 0; return;
+    }
+    words.forEach((w) => w.s.classList.remove("on")); words.forEach((w) => { w.p.style.display = "none"; });
+    ti = 0; mode = "type"; ltb.textContent = "Skip ⏩"; ltc.scrollTop = 0;
+    void st.offsetWidth; st.classList.add("pop"); sfx([[660, .08], [880, .1], [1175, .15]]);
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    at(1000, () => { st.classList.add("opened"); sfx([[500, .08], [700, .1]]); });
+    at(1900, () => st.classList.add("rise"));
+    at(3100, () => st.classList.add("read"));
+    at(4200, step);
+  }
+  function closeLetter(){
+    timers.forEach(clearTimeout); clearTimeout(tm); showAll();
+    lt.classList.remove("on"); $("#letterbtn").hidden = false;
+    setTimeout(() => { st.className = "ltst"; running = false; }, 450);
+  }
+  ltb.addEventListener("click", () => { if (mode === "type") { clearTimeout(tm); timers.forEach(clearTimeout); st.classList.add("opened", "rise", "read"); showAll(); finish(); } else closeLetter(); });
+  $("#ltx").addEventListener("click", closeLetter);
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && lt.classList.contains("on")) closeLetter(); });
+
+  /* a button to re-read the letter later */
+  $("#acts").insertAdjacentHTML("beforeend", '<button class="btn alt sm" id="letterbtn" hidden>Read the letter 💌</button>');
+  $("#letterbtn").addEventListener("click", () => openLetter(true));
+
+  /* trigger: the last slice has been cut (or she taps Continue before that) */
+  let cc = 0;
+  $("#cutbtn").addEventListener("click", () => { cc++; if (cc >= 6) setTimeout(() => { if (!seen) openLetter(false); }, 3300); });
+  $("#goon").addEventListener("click", () => { if (!seen) setTimeout(() => openLetter(false), 500); });
+})();
