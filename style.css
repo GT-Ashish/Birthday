@@ -958,7 +958,7 @@ a.btn {
     cursor: pointer
 }
 
-.queue li.cur button {
+.queue li.now button {
     border-color: var(--plum);
     background: var(--gold)
 }
@@ -2351,3 +2351,12 @@ canvas#fx {
         transition: none
     }
 }
+
+/* Door v7 */
+.door.ready{cursor:pointer;animation:dwig 1.4s ease-in-out infinite}
+.door.ready .sign{animation:tw 1.1s ease-in-out infinite alternate}
+@keyframes dwig{0%,100%{transform:none}50%{transform:rotateY(-7deg)}}
+@media (prefers-reduced-motion:reduce){.door.ready,.door.ready .sign{animation:none}}
+
+/* Exit v8 */
+#exitbtn{position:absolute;left:12px;top:22px;z-index:20}

@@ -46,7 +46,7 @@ function tick() {
 /* Countdown (add #open to the link to preview the reveal) */
 const PREVIEW = location.hash === "#open";
 const target = PREVIEW ? new Date(Date.now() - 1) : BIRTHDAY;
-let opened = false;
+let opened = false, ready = false;
 const UNITS = ["days", "hrs", "min", "sec"];
 $("#cd").innerHTML = UNITS.map(u => `<div data-u="${u}"><b>00</b><span>${u}</span></div>`).join("");
 function setUnit(u, n) { const b = $(`#cd [data-u="${u}"] b`), v = String(n).padStart(2, "0"); if (b.textContent !== v) { b.textContent = v; b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } }
@@ -65,8 +65,8 @@ setInterval(spawnDeco, 600);
 function updateCd() {
   const d = target - Date.now();
   if (d <= 0) {
-    $("#cd").hidden = true; $("#cdmsg").textContent = "The door is open. Happy Birthday, Shreety!";
-    if (!opened) { opened = true; document.querySelector(".scene").classList.add("opened"); $("#door").classList.add("open"); setTimeout(enterRoom, 2600); setTimeout(() => burst(200), 900); for (let i = 0; i < 24; i++) setTimeout(spawnDeco, 400 + i * 90); }
+    $("#cd").hidden = true; $("#cdmsg").textContent = "The door is open. Tap it to go in! 🚪";
+    if (!ready) { ready = true; const dr = $("#door"); dr.classList.add("ready"); dr.setAttribute("role", "button"); dr.tabIndex = 0; dr.setAttribute("aria-label", "Open the door"); dr.querySelector(".sign").innerHTML = "Tap to come in!<small>Happy Birthday 🎂</small>"; burst(80); }
     return;
   }
   const t = Math.floor(d / 1000);
@@ -139,9 +139,9 @@ function renderQueue() {
   $("#queue").hidden = false;
   $("#q").innerHTML = ids.map((id, i) => {
     const tag = i === cur ? '<span class="tag">Now playing</span>' : (i === cur + 1 ? '<span class="tag">Next</span>' : "");
-    return `<li class="${i === cur ? "cur" : ""}"><button data-i="${i}"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy"><span class="t">${tag}${esc(titles[id] || "Song " + (i + 1))}</span></button></li>`;
+    return `<li class="${i === cur ? "now" : ""}"><button data-i="${i}"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy"><span class="t">${tag}${esc(titles[id] || "Song " + (i + 1))}</span></button></li>`;
   }).join("");
-  const c = $("#q .cur"); if (c) $("#queue").scrollTop = Math.max(0, c.offsetTop - 70);
+  const c = $("#q .now"); if (c) $("#queue").scrollTop = Math.max(0, c.offsetTop - 70);
 }
 function loadQueue() {
   if (!yp || !yp.getPlaylist) return;
@@ -404,14 +404,14 @@ const HINTS = {
 };
 function sfx(a) { if (!AU.ctx || AU.muted) return; a.forEach((x, i) => tone(x[0], AU.ctx.currentTime + i * 0.09, x[1], "triangle", 0.12)); }
 function setStage(s, quiet) {
-  stage = s; ins.dataset.stage = s; if (!PREVIEW) store.set("rstage", s);
+  stage = s; ins.dataset.stage = s;
   $("#inshint").textContent = HINTS[s];
   if (s === "open") { partyOn = true; bg(); if (!quiet) { burst(200); track("room", "curtain untied"); } }
 }
 function enterRoom() {
   if (!ins.hidden) return;
-  $("#outside").hidden = true; ins.hidden = false; if (PREVIEW || !store.get("navok")) $("#nav").hidden = true; $("#t-door").classList.add("inroom");
-  const saved = PREVIEW ? null : store.get("rstage");
+  $("#outside").hidden = true; ins.hidden = false; if (!stage) $("#nav").hidden = true; $("#t-door").classList.add("inroom");
+  const saved = stage;
   setStage(saved || "dark", true);
 }
 function lightsOn() { if (stage !== "dark") return; setStage("lit"); sfx([[880, .08], [1320, .12]]); track("room", "lights on"); }
@@ -842,3 +842,34 @@ I'd like to wish you one more time
   $("#cutbtn").addEventListener("click", () => { cc++; if (cc >= 6) setTimeout(() => { if (!seen) openLetter(false); }, 3300); });
   $("#goon").addEventListener("click", () => { if (!seen) setTimeout(() => openLetter(false), 500); });
 })();
+
+/* Door v7: tap the door to enter the party room */
+function openDoor() {
+  if (!ready || opened) return;
+  opened = true;
+  const dr = $("#door");
+  dr.classList.remove("ready"); dr.classList.add("open"); dr.removeAttribute("role"); dr.removeAttribute("tabindex");
+  document.querySelector(".scene").classList.add("opened");
+  sfx([[392, .1], [523, .1], [659, .15]]);
+  setTimeout(enterRoom, 2600); setTimeout(() => burst(200), 900);
+  for (let i = 0; i < 24; i++) setTimeout(spawnDeco, 400 + i * 90);
+  track("room", "door tapped");
+}
+$("#door").addEventListener("click", openDoor);
+$("#door").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDoor(); } });
+
+/* Exit v8: leave the party room, back to the door screen */
+ins.insertAdjacentHTML("beforeend", '<button class="btn sm" id="exitbtn" aria-label="Exit the room">🚪 Exit</button>');
+function exitRoom() {
+  if (ins.hidden) return;
+  ins.hidden = true; $("#outside").hidden = false; $("#t-door").classList.remove("inroom");
+  partyOn = false; bg();                       /* party song stops, soft music returns */
+  $("#nav").hidden = false;                    /* she is out, so the tabs are free */
+  const dr = $("#door");
+  dr.classList.remove("open"); void dr.offsetWidth;
+  document.querySelector(".scene").classList.remove("opened");
+  opened = false;
+  if (ready) { dr.classList.add("ready"); dr.setAttribute("role", "button"); dr.tabIndex = 0; dr.setAttribute("aria-label", "Open the door"); }
+  track("room", "exited");
+}
+$("#exitbtn").addEventListener("click", exitRoom);
