@@ -4,10 +4,10 @@ const BIRTHDAY = new Date(2026, 9, 23, 0, 0, 0);   // 23 Oct 2026, 12:00 am (vis
 const YT_PLAYLIST = "PLRFTrQY8fGBU";   // paste your YouTube playlist ID here (the part after list=)
 const PHOTO_LINK = "https://drive.google.com/drive/folders/1es07QWsyDwTA37LYfl8iNq5EPzdbfXXs?usp=sharing";   // Google Drive folder for photo uploads
 const PLAYLIST_LINK = "https://www.youtube.com/playlist?list=PLRFTrQY8fGBU&jct=2PlIBhoDxqfxvzpZUXcqTQ";   // paste the collaborative playlist invite link here (leave empty to hide the button)
-const COUPON_HOURS = 4;   // hours between coupons
+const COUPON_HOURS = 2.75;   // 2 hours 45 minutes between coupons
 const MEGA_AFTER = 3;     // coupons needed to unlock the MEGA coupon
-const WISH_MAX = 6, WISH_GAP_H = 2.5;   // wishes allowed, hours between wishes
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbx6Wv9dJIceg-I9ZJfbQnLYs5yD5hgrEfUAN9oO0zih2PG9B1x3cWMDm56P7FIpIvyn/exec";   // paste your Google Apps Script web app URL here (see setup steps)
+const WISH_MAX = 6, WISH_GAP_H = 1.75;   // 6 wishes, 1 hour 45 minutes apart
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzqr5g21fNa6fUiE0OXnQABAZ4uwrkRMgxb5PeeZybyeZEKOdftCnj94mmIpWQO3_1AKA/exec";   // paste your Google Apps Script web app URL here (see setup steps)
 /* ====================== */
 const $ = s => document.querySelector(s);
 const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -264,7 +264,8 @@ const PRIZES = [
   {e:"🎬", t:"Movie night", s:"You pick the movie, I bring the snacks."}];
 const MEGA = {e:"👑", t:"MEGA WISH", s:"Any wish you want. I’ll grant it (if it’s feasible)!", mega:true};
 let cp = {list: [], last: 0, mega: false}; try { cp = Object.assign(cp, JSON.parse(store.get("cpn") || "{}")); } catch (e) {}
-$("#chint").textContent = `A new coupon every ${COUPON_HOURS} hours. Collect ${MEGA_AFTER} to unlock the MEGA coupon!`;
+const hm = h => { const m = Math.round(h * 60), a = Math.floor(m / 60), b = m % 60; return (a ? a + " h " : "") + (b ? b + " min" : ""); };
+$("#chint").textContent = `A new coupon every ${hm(COUPON_HOURS)}. Collect ${MEGA_AFTER} to unlock the MEGA coupon!`;
 const fmt = ms => { const t = Math.ceil(ms / 1000); return [Math.floor(t / 3600), Math.floor(t % 3600 / 60), t % 60].map(v => String(v).padStart(2, "0")).join(":"); };
 const when = ts => new Date(ts).toLocaleString([], {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
 function drawList(){
@@ -330,7 +331,7 @@ const SID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).sl
 let visitNo = 0, secs = 0;
 if (location.hash === "#me") store.set("noTrack", "1");   // open the site once with #me on the end to stop counting your own visits
 if (location.hash === "#track") store.set("noTrack", "");
-function post(o){   if (!SHEET_URL || store.get("noTrack") || location.hostname !== "gt-ashish.github.io") return; try { fetch(SHEET_URL, {method: "POST", mode: "no-cors", keepalive: true, body: JSON.stringify(o)}).catch(() => {}); } catch (e) {} }
+function post(o){ if (!SHEET_URL || store.get("noTrack") || location.hostname !== "gt-ashish.github.io") return; try { fetch(SHEET_URL, {method: "POST", mode: "no-cors", keepalive: true, body: JSON.stringify(o)}).catch(() => {}); } catch (e) {} }
 function track(type, detail){ post({type, detail: typeof detail === "string" ? detail : JSON.stringify(detail || "")}); }
 const sendSess = () => post({type: "session", sid: SID, visit: visitNo, sec: secs});
 function startTracking(){
