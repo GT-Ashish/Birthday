@@ -44,7 +44,8 @@ function tick(){
 }
 
 /* Countdown (add #open to the link to preview the reveal) */
-const target = location.hash === "#open" ? new Date(Date.now() - 1) : BIRTHDAY;
+const PREVIEW = location.hash === "#open";
+const target = PREVIEW ? new Date(Date.now() - 1) : BIRTHDAY;
 let opened = false;
 const UNITS = ["days","hrs","min","sec"];
 $("#cd").innerHTML = UNITS.map(u => `<div data-u="${u}"><b>00</b><span>${u}</span></div>`).join("");
@@ -65,7 +66,7 @@ function updateCd(){
   const d = target - Date.now();
   if (d <= 0) {
     $("#cd").hidden = true; $("#cdmsg").textContent = "The door is open. Happy Birthday, Shreety!";
-    if (!opened) { opened = true; document.querySelector(".scene").classList.add("opened"); $("#door").classList.add("open"); setTimeout(() => burst(200), 900); for (let i = 0; i < 24; i++) setTimeout(spawnDeco, 400 + i * 90); }
+    if (!opened) { opened = true; document.querySelector(".scene").classList.add("opened"); $("#door").classList.add("open"); setTimeout(enterRoom, 2600); setTimeout(() => burst(200), 900); for (let i = 0; i < 24; i++) setTimeout(spawnDeco, 400 + i * 90); }
     return;
   }
   const t = Math.floor(d / 1000);
@@ -179,10 +180,15 @@ $("#seek").addEventListener("input", e => { if (yp && yp.getDuration) yp.seekTo(
 setInterval(() => { if (yp && playing && yp.getDuration) { const d = yp.getDuration(); if (d) $("#seek").value = yp.getCurrentTime() / d * 100; } }, 500);
 
 /* Background music: synthesized in the browser, starts after the password tap */
-let tab = "door", ytOn = false; const _ = null;
+let tab = "door", ytOn = false, partyOn = false; const _ = null;
 const AU = {ctx:null, out:null, tune:null, step:0, next:0, muted:false};
 const MIDI = n => 440 * Math.pow(2, (n - 69) / 12);
 const TUNES = {
+  party: {bpm: 118, lines: [
+    {t:"triangle", v:.09, d:1.6, n:[72,_,76,79,_,84,79,_, 77,_,81,84,_,81,77,_, 74,_,79,83,_,79,74,_, 72,_,76,79,84,_,_,_]},
+    {t:"triangle", v:.10, d:1.4, n:[48,_,_,_,52,_,_,_, 53,_,_,_,57,_,_,_, 55,_,_,_,59,_,_,_, 48,_,_,_,52,_,55,_]},
+    {t:"sine", v:.05, d:.7, n:[84,_,_,_,_,_,88,_, 89,_,_,_,_,_,93,_, 86,_,_,_,_,_,91,_, 84,_,_,_,88,_,_,_]}
+  ]},
   sweet:{bpm:100, lines:[
     {t:"sine", v:.09, d:2.2, n:[60,64,67,72,67,64,67,64, 57,60,64,69,64,60,64,60, 53,57,60,65,60,57,60,57, 55,59,62,67,62,59,62,59]},
     {t:"triangle", v:.08, d:1.6, n:[79,_,76,_,79,_,84,_, 81,_,79,_,76,_,_,_, 76,_,79,_,81,_,79,_, 79,_,74,_,76,_,_,_]}
@@ -211,7 +217,7 @@ function sched(){
 function bg(){
   if (!AU.ctx) return;
   if (AU.ctx.resume) AU.ctx.resume();
-  const want = (AU.muted || ytOn) ? null : (tab === "game" ? "game" : "sweet");
+  const want = (AU.muted || ytOn) ? null : (tab === "game" ? "game" : partyOn ? null : "sweet"); hb();
   if (want !== AU.tune) { AU.tune = want; AU.step = 0; AU.next = AU.ctx.currentTime + .15; }
 }
 function startAudio(){
@@ -368,3 +374,75 @@ function wishAction(){
 $("#wbtn").addEventListener("click", wishAction);
 $("#candle").addEventListener("click", () => { if (lit) wishAction(); });
 wtick(); setInterval(wtick, 1000);
+
+/* ==========================================================
+   Inside the birthday room: lamp cord -> lights -> curtain bow -> party
+   (open the site with #open on the end to preview it)
+   ========================================================== */
+const ins = $("#inside");
+let stage = null;
+const HINTS = {
+  dark: "The door swung open. It’s dark in there… pull the lamp cord! 💡",
+  lit: "Lights on! Now untie the big red bow 🎀 (drag it or tap it)",
+  open: "Surprise! Tap the candles to blow them out 🎂"
+};
+function sfx(a){ if (!AU.ctx || AU.muted) return; a.forEach((x, i) => tone(x[0], AU.ctx.currentTime + i * 0.09, x[1], "triangle", 0.12)); }
+function setStage(s, quiet){
+  stage = s; ins.dataset.stage = s; if (!PREVIEW) store.set("rstage", s);
+  $("#inshint").textContent = HINTS[s];
+  if (s === "open") { partyOn = true; bg(); if (!quiet) { burst(200); track("room", "curtain untied"); } }
+}
+function enterRoom(){
+  if (!ins.hidden) return;
+  $("#outside").hidden = true; ins.hidden = false; $("#t-door").classList.add("inroom");
+  const saved = PREVIEW ? null : store.get("rstage");
+  setStage(saved || "dark", true);
+}
+function lightsOn(){ if (stage !== "dark") return; setStage("lit"); sfx([[880, .08], [1320, .12]]); track("room", "lights on"); }
+function untie(){ if (stage !== "lit") return; $("#bowbtn").classList.add("undone"); sfx([[523, .1], [659, .1], [784, .1], [1047, .2]]); setTimeout(() => setStage("open"), 400); }
+
+function pull(el, move, done){
+  let sx = 0, sy = 0, on = false, mv = 0;
+  el.addEventListener("pointerdown", (e) => { on = true; sx = e.clientX; sy = e.clientY; mv = 0; el.setPointerCapture(e.pointerId); });
+  el.addEventListener("pointermove", (e) => { if (!on) return; const dx = e.clientX - sx, dy = e.clientY - sy; mv = Math.max(mv, Math.hypot(dx, dy)); move(dx, dy); });
+  const end = () => { if (!on) return; on = false; done(mv < 6); };
+  el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end);
+  el.addEventListener("click", (e) => { if (e.detail === 0) done(true); });   // keyboard
+}
+const cord = $("#cord"), bow = $("#bowbtn");
+let pp = 0;
+pull($("#cordb"), (dx, dy) => { pp = Math.max(0, Math.min(60, dy)); cord.style.setProperty("--p", pp + "px"); },
+  (tap) => { if (tap || pp > 35) { cord.style.setProperty("--p", "50px"); setTimeout(() => { lightsOn(); cord.style.setProperty("--p", "0px"); }, 160); } else { pp = 0; cord.style.setProperty("--p", "0px"); } });
+let bd = 0;
+pull(bow, (dx, dy) => { bd = Math.hypot(dx, dy); bow.style.setProperty("--bx", Math.max(-60, Math.min(60, dx)) + "px"); bow.style.setProperty("--by", Math.max(-30, Math.min(60, dy)) + "px"); bow.style.setProperty("--br", dx / 6 + "deg"); },
+  (tap) => { if (tap || bd > 40) untie(); else { bd = 0; ["--bx", "--by", "--br"].forEach((p) => bow.style.removeProperty(p)); } });
+
+/* Decorations (built once) */
+(() => {
+  const cols = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#8A9A3B", "#BFE3F5"]; let i = 0;
+  $("#bunt").innerHTML = ["HAPPY 23RD", "SHREETY"].map((r) => `<div class="brow">${[...r].map((ch) => ch === " " ? '<span class="sp"></span>' : `<span style="--i:${i};background:${cols[i++ % 5]}">${ch}</span>`).join("")}</div>`).join("");
+  const L = [2, 11, 19, 73, 82, 91], T = [34, 10, 40, 40, 12, 32], C = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#BFE3F5", "#FF9EC4"];
+  $("#balloons").innerHTML = L.map((l, k) => `<span class="bl" style="--l:${l}%;--t:${T[k]}%;--c:${C[k]};--dl:${k * 0.25}s"></span>`).join("");
+  let w = "M0 2", b = "";
+  for (let k = 0; k < 8; k++) { w += `Q${6.25 + 12.5 * k} 9 ${12.5 * (k + 1)} 2`; b += `<i style="left:calc(${6.25 + 12.5 * k}% - 4px);top:6px;--c:${cols[k % 5]};--d:${k * 0.17}s"></i>`; }
+  $("#fairy").innerHTML = `<svg viewBox="0 0 100 10" preserveAspectRatio="none"><path d="${w}" fill="none" stroke="#4A2A6B" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>${b}`;
+})();
+
+/* Cake candles */
+let blown = 0;
+document.querySelectorAll(".cdl").forEach((cd) => cd.addEventListener("click", () => {
+  if (stage !== "open") return;
+  const f = cd.querySelector(".fl"); if (f.classList.contains("off")) return;
+  f.classList.add("off"); blown++;
+  if (blown === 2) { burst(160); $("#inshint").textContent = "Happy Birthday, Shreety! 🎂 Now make a wish (see the Make a Wish tab)"; $("#relight").hidden = false; track("cake", "candles blown out"); }
+}));
+$("#relight").addEventListener("click", () => { document.querySelectorAll(".fl").forEach((f) => f.classList.remove("off")); blown = 0; $("#relight").hidden = true; $("#inshint").textContent = HINTS.open; });
+
+/* Party song: hbd.mp3 (plays after the bow is untied; pauses for mute, YouTube, game tab, hidden page) */
+const hbd = new Audio("hbd.mp3"); hbd.loop = true; hbd.preload = "auto";
+function hb(){
+  const on = partyOn && !AU.muted && !ytOn && tab !== "game" && !document.hidden;
+  if (on) { if (hbd.paused) hbd.play().catch(() => {}); } else if (!hbd.paused) hbd.pause();
+}
+document.addEventListener("visibilitychange", hb);
+document.addEventListener("pointerdown", hb, {passive: true});   // retries if the browser blocked autoplay after a refresh
