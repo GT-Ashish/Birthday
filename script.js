@@ -685,14 +685,78 @@ I'd like to wish you one more time
 ~a very happy birthday 🎂❤️`;
 
   document.body.insertAdjacentHTML("beforeend",
-    '<div id="lt" role="dialog" aria-modal="true" aria-label="A letter for Shreety"><div class="ltst" id="ltst">'
+    '<div id="lt" role="dialog" aria-modal="true" aria-label="A letter for Shreety">'
+    + '<div class="lt-photos" id="lt-photos" aria-hidden="true"></div>'
+    + '<div class="ltst" id="ltst">'
     + '<div class="eb"></div>'
-    + '<div class="ep"><button class="ltx" id="ltx" aria-label="Close letter">×</button><div class="pc" id="ltc"></div><div class="pf"><button class="btn sm alt" id="ltb">Skip ⏩</button></div></div>'
+    + '<div class="ep"><button class="ltx" id="ltx" aria-label="Close letter">×</button><div class="pc" id="ltc"></div><div class="pf"><button class="btn sm alt" id="ltb" style="display:none">Close 💖</button></div></div>'
     + '<svg class="ef" viewBox="0 0 300 200" preserveAspectRatio="none" aria-hidden="true"><polygon points="2,2 150,105 2,198" fill="#ff9ec4"/><polygon points="298,2 150,105 298,198" fill="#ff9ec4"/><polygon points="2,198 150,100 298,198" fill="#ffc2dc"/></svg>'
     + '<svg class="fp" viewBox="0 0 300 105" preserveAspectRatio="none" aria-hidden="true"><polygon points="2,2 298,2 150,103" fill="#ff86b6"/></svg>'
     + '<span class="seal" aria-hidden="true">💖</span></div></div>');
-  const lt = $("#lt"), st = $("#ltst"), ltc = $("#ltc"), ltb = $("#ltb");
+  const lt = $("#lt"), st = $("#ltst"), ltc = $("#ltc"), ltb = $("#ltb"), photoBox = $("#lt-photos");
   const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* Floating memory photos engine */
+  const photoPool = [];
+  for (let i = 1; i <= 114; i++) {
+    photoPool.push(`photos/p${i}.jpeg`);
+  }
+  // Shuffle so every view is fresh and delightful
+  for (let i = photoPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [photoPool[i], photoPool[j]] = [photoPool[j], photoPool[i]];
+  }
+  let photoTimer = 0, photoIdx = 0;
+
+  // Preload first 12 photos for instant smooth floating
+  photoPool.slice(0, 12).forEach((src) => { const im = new Image(); im.src = src; });
+
+  function spawnPhoto(){
+    if (!running || !photoPool.length) return;
+    const src = photoPool[photoIdx % photoPool.length];
+    photoIdx++;
+    const card = document.createElement("div");
+    card.className = "polaroid";
+
+    const isRight = photoIdx % 2 === 0;
+    const isMobile = innerWidth < 680;
+    let tx, ty;
+    if (isMobile) {
+      tx = isRight ? (innerWidth * 0.54 + Math.random() * 20) : (innerWidth * 0.05 + Math.random() * 20);
+      ty = 30 + (photoIdx % 3) * (innerHeight * 0.28) + (Math.random() * 30 - 15);
+      card.style.setProperty("--max-op", "0.55");
+    } else {
+      tx = isRight ? (innerWidth * 0.77 + Math.random() * (innerWidth * 0.12)) : (innerWidth * 0.04 + Math.random() * (innerWidth * 0.11));
+      ty = Math.max(30, Math.min(innerHeight - 250, 50 + (photoIdx % 4) * (innerHeight * 0.21) + (Math.random() * 40 - 20)));
+      card.style.setProperty("--max-op", "0.85");
+    }
+
+    card.style.setProperty("--tx", tx + "px");
+    card.style.setProperty("--ty", ty + "px");
+    card.style.setProperty("--r", (Math.random() * 20 - 10) + "deg");
+    card.style.setProperty("--drift-x", (Math.random() * 26 - 13) + "px");
+    card.style.setProperty("--dr", (Math.random() * 6 - 3) + "deg");
+
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "Memory";
+    card.appendChild(img);
+    photoBox.appendChild(card);
+
+    setTimeout(() => { card.remove(); }, 5200);
+  }
+
+  function startPhotos(){
+    stopPhotos();
+    spawnPhoto();
+    photoTimer = setInterval(spawnPhoto, 1700);
+  }
+
+  function stopPhotos(){
+    clearInterval(photoTimer);
+    photoTimer = 0;
+    if (photoBox) photoBox.innerHTML = "";
+  }
 
   /* build the letter */
   const words = [];
@@ -702,7 +766,7 @@ I'd like to wish you one more time
     let txt = para.trim(); if (txt[0] === "~") { txt = txt.slice(1); p.className = "em"; }
     txt.split(/\s+/).forEach((w) => {
       const s = document.createElement("span"), m = w.match(/^\*(.+?)\*(.*)$/);
-      s.className = "w" + (m ? " i" : ""); s.textContent = (m ? m[1] + m[2] : w) + " ";
+      s.className = "w" + (m ? " i" : ""); s.textContent = m ? m[1] + m[2] : w;
       p.appendChild(s); words.push({s, p});
     });
     ltc.appendChild(p);
@@ -712,35 +776,43 @@ I'd like to wish you one more time
   let seen = false, running = false, ti = 0, tm = 0, timers = [], mode = "type";
   const reveal = (w) => { w.p.style.display = ""; w.s.classList.add("on"); };
   const showAll = () => { words.forEach(reveal); ti = words.length; };
-  function finish(){ mode = "done"; ltb.textContent = "Close 💖"; burst(90); }
+  function finish(){
+    mode = "done";
+    ltb.style.display = "";
+    ltb.textContent = "Close 💖";
+    burst(90);
+  }
   function step(){
     if (ti >= words.length) { finish(); return; }
     const w = words[ti++]; reveal(w); ltc.scrollTop = ltc.scrollHeight;
     const t = w.s.textContent.trim(), lastInP = ti >= words.length || words[ti].p !== w.p;
-    tm = setTimeout(step, 65 + (/[.!?]$/.test(t) ? 330 : /,$/.test(t) ? 140 : 0) + (lastInP ? 500 : 0));
+    const isPunct = /[.!?…]$/.test(t) || /\.\.\.$/.test(t);
+    const isComma = /[,;:]$/.test(t);
+    tm = setTimeout(step, 210 + (isPunct ? 650 : isComma ? 300 : 0) + (lastInP ? 950 : 0));
   }
   function openLetter(instant){
     if (running) return; running = true; seen = true;
     timers.forEach(clearTimeout); clearTimeout(tm); timers = [];
     st.className = "ltst"; lt.classList.add("on");
     if (instant || reduce) {
-      showAll(); finish(); st.classList.add("read", "opened", "rise"); ltc.scrollTop = 0; return;
+      showAll(); finish(); st.classList.add("read", "opened", "rise"); ltc.scrollTop = 0; startPhotos(); return;
     }
     words.forEach((w) => w.s.classList.remove("on")); words.forEach((w) => { w.p.style.display = "none"; });
-    ti = 0; mode = "type"; ltb.textContent = "Skip ⏩"; ltc.scrollTop = 0;
+    ti = 0; mode = "type"; ltb.style.display = "none"; ltc.scrollTop = 0;
     void st.offsetWidth; st.classList.add("pop"); sfx([[660, .08], [880, .1], [1175, .15]]);
     const at = (ms, fn) => timers.push(setTimeout(fn, ms));
     at(1000, () => { st.classList.add("opened"); sfx([[500, .08], [700, .1]]); });
     at(1900, () => st.classList.add("rise"));
-    at(3100, () => st.classList.add("read"));
+    at(3100, () => { st.classList.add("read"); startPhotos(); });
     at(4200, step);
   }
   function closeLetter(){
     timers.forEach(clearTimeout); clearTimeout(tm); showAll();
+    stopPhotos();
     lt.classList.remove("on"); $("#letterbtn").hidden = false;
     setTimeout(() => { st.className = "ltst"; running = false; }, 450);
   }
-  ltb.addEventListener("click", () => { if (mode === "type") { clearTimeout(tm); timers.forEach(clearTimeout); st.classList.add("opened", "rise", "read"); showAll(); finish(); } else closeLetter(); });
+  ltb.addEventListener("click", () => { closeLetter(); });
   $("#ltx").addEventListener("click", closeLetter);
   addEventListener("keydown", (e) => { if (e.key === "Escape" && lt.classList.contains("on")) closeLetter(); });
 
