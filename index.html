@@ -1,146 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Shreety’s Waiting Room</title>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Shreety’s Waiting Room</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<svg width="0" height="0" style="position:absolute"><symbol id="b" viewBox="0 0 40 40"><path d="M18 20 2 8v24zM22 20l16-12v24z"/><circle cx="20" cy="20" r="5"/></symbol><symbol id="lily" viewBox="-20 -20 40 40"><g fill="#fff" stroke="#E8307A" stroke-width="1.5"><ellipse cy="-9" rx="4.5" ry="10"/><ellipse cy="-9" rx="4.5" ry="10" transform="rotate(60)"/><ellipse cy="-9" rx="4.5" ry="10" transform="rotate(120)"/><ellipse cy="-9" rx="4.5" ry="10" transform="rotate(180)"/><ellipse cy="-9" rx="4.5" ry="10" transform="rotate(240)"/><ellipse cy="-9" rx="4.5" ry="10" transform="rotate(300)"/></g><circle r="3" fill="#F5B94A"/></symbol></svg>
-<svg class="bow" style="top:12%;left:6%;fill:var(--plum);transform:rotate(-15deg)"><use href="#b"/></svg>
-<svg class="bow" style="bottom:10%;right:7%;transform:rotate(12deg)"><use href="#b"/></svg>
-<canvas id="fx" aria-hidden="true"></canvas>
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="b" viewBox="0 0 40 40">
+      <path d="M18 20 2 8v24zM22 20l16-12v24z" />
+      <circle cx="20" cy="20" r="5" />
+    </symbol>
+    <symbol id="lily" viewBox="-20 -20 40 40">
+      <g fill="#fff" stroke="#E8307A" stroke-width="1.5">
+        <ellipse cy="-9" rx="4.5" ry="10" />
+        <ellipse cy="-9" rx="4.5" ry="10" transform="rotate(60)" />
+        <ellipse cy="-9" rx="4.5" ry="10" transform="rotate(120)" />
+        <ellipse cy="-9" rx="4.5" ry="10" transform="rotate(180)" />
+        <ellipse cy="-9" rx="4.5" ry="10" transform="rotate(240)" />
+        <ellipse cy="-9" rx="4.5" ry="10" transform="rotate(300)" />
+      </g>
+      <circle r="3" fill="#F5B94A" />
+    </symbol>
+  </svg>
+  <svg class="bow" style="top:12%;left:6%;fill:var(--plum);transform:rotate(-15deg)">
+    <use href="#b" />
+  </svg>
+  <svg class="bow" style="bottom:10%;right:7%;transform:rotate(12deg)">
+    <use href="#b" />
+  </svg>
+  <canvas id="fx" aria-hidden="true"></canvas>
 
-<div id="gate">
-  <h1>Knock knock…</h1>
-  <p>Who’s there? Whisper the secret word, Shreety.</p>
-  <form id="gf"><input id="pw" type="password" autocomplete="off" aria-label="Secret word" placeholder="Secret word"><button class="btn" type="submit">Knock</button></form>
-  <div id="err" role="alert"></div>
-</div>
-
-<div id="app" hidden>
-<nav id="nav">
-  <button data-t="door" aria-current="true">The Door</button>
-  <button data-t="sikkim">Sikkim Trip</button>
-  <button data-t="home">Home Plans</button>
-  <button data-t="game">Game Zone</button>
-  <button data-t="music">Music Corner</button>
-  <button data-t="photos">Photos</button>
-  <button data-t="wish">Make a Wish</button>
-</nav>
-<button class="btn" id="mute" aria-label="Mute music">🔊</button>
-
-<section class="wrap fit" id="t-door">
-  <div id="outside">
-  <h1>Please wait outside</h1>
-  <p class="sub">You made me wait outside my room. Now you wait outside yours.</p>
-  <div class="scene">
-    <div class="deco" id="deco"><span class="peek" style="left:-28px;top:-14px">🎈</span><span class="peek" style="right:-28px;top:22%;animation-delay:.8s">🎀</span><span class="peek" style="left:-24px;bottom:8%;animation-delay:1.4s">🎉</span></div>
-    <div class="her" id="her"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCADcANwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDVfVbO6uEjKYXJQZ478GoTbE3YgLBldsKcdGHQH0PaqCy291HI2ns5dRuaGYA8d8Eda0/Dly1xdwx3aHzVYbW9RngH+lcR3uLjucVf3v2nxHdmdco7/iMDGRW9LGsNom1nDDHT0/A1zU2+TWJFjAUrMw5PJ5rsIoXudPiRlXepHTncM8/jj+VUiGedarcA65dzAEqZWIz1xnjNcxrF4ZrggHgVseIJAmpXwiBAMjBR6c1ydwSGIzmtYLqZzlpYikbk81GOaCcmmE5PFamI7dzSjk80wfWpFBpgSoSD14q4jFhgcCq8URIyw4qzCueB2pXDlLsCgjg54q7DC2BwQPcUyyTaATjmrwmG7HH1prUbViAQs5yxOBVe4iUDHQVdcyNwpOPaojbsTzk+1NsmxSWPuvanxOc81PNHswB19KYIycBeppMdi7pyyTXChDkjkn0Fdpcxrb2KkHexAyQeRXO6BbN5qgDg9/Wuo1O0EkWYywIH51hJm0InG6iNxZlPfpVFU+b2raurNhIAOc9j2qhMgjU7kYNWsGjOpEqyJnmMgH0qhskE2TyQKluGbkA9Kqea2celbXMGhu9lJ3fMO/tU8UuSOcioN4bO4fiKTaQCV6UybGvAowGAHWtpbaQqGRCysMjBPFcxZT+XKM8jvXo+iSGTT0aEFkz1DYpsEi/oMFvbabPe31x5IlHlRBRuZv7xA/Ic+9a+iIbfUrW7jlMtly+8jHAGSCOxFch5VuNQkhmnKRb8CRF3ADPpXUtHDpui3kFvKXcLguy43Fh29to/WvKgz6DFRVrnHJDDc3M90hkJLl2QA5wTnNb0WpW9rfw6eExbjaftBPzhjzuHqvPSueuZLq3s4JLVmjRWO9k4+btmjxDrdtc2NpdLH5WoxDy5lA+V8dGH9RWl76HPGmuW7OM1yfN7cMGy29sH8a56Q5yO9Wr2TfIzE9TVEmuiKsjhnuN9qT0xQf0oAJqiRyrk81dgiC/Mw+lR2sWSCRViQ7cDvmpbKSBjyAOtWIhtOearRj5/erOc8ZpFWLiS7sc8DtVqN8nA4rLQ7jwTxWlZRgnLAsT+Qp3sK1zYtowYwDwO5qRwqAqBk1HHKBgEg+gFSnGdzYGew7VSBoz2t2zu281esrDcAdnzH17VpWFk1ywLD5RXUaPpW91YrgZqJSLjDqQ6bozxQJlCCRlSP5VqLbyBl+UNgbSvrXSG1AgQAdKhmthuBXg+tYs2SOXvNIhkBO3DHvjoa5rVNGlQnjcgr0zysZDLz/OqV3Zq4PA/ClzNCcU9zxm/sGQtlCPesaWJgW5NevahpEZDFV4PUiuV1XSFUfJgn6VrGrcxnROBIZTntU8DfxA/UVc1GyMbcD61nH5DxxXQpXOaUbGpHZifhPkkxu2nofpUwlu7QCJS6gc4Gao6bcKJBHOTt/hYdjXQi9jCKl5bK8yDaW9aohHeX2lDVrWzvtP8tZXQJcIzBcEcF/p61bvBDF4fv3f5lhVIUdR1baF4z+NMbSjc2sZtGMNuikRCRvmY55/U9faszXoLqx0r7LIeWlVjzuB4rzoxPWq1nPQoxXt7aO2+zN7pciALGVJXGOeR0Oc1wviK5tZppPsMckMWeI3bcR+Nddc3M76W9jb5FxMRwp2/IMk/0rz3VWCSsikccZ9a1jHUznU92xlTtk4FQkcdae3J4+tNbge9bnIxvenRjnnvTGNSRLnBpDRdWRVQAcU0schj1PSo0AbqcAVIFywPapLRIAce9SqOOeRUe7OAvFTIuQMdO9Fx2J7YBuTworSjc7QBgVTiQtgDgeoq9FH5YG0cVLLSLMB2gZQ7j71q6fbedIAR8tUrOF3ZSADk4A9a6zSbMRpuccKKiVS2hpCnd6lvToP3yRIuF9K7GwtxGF6VlaLbbiZWUZP8q6FcBQQOc1lzGjiW9vy4pgQMcGnocg+tMZ9pz60+YmxFNFzgj8aoXUbjJGGHvWoXDr71UuQM4FJyGkYc6RkYyUb0NY9/AuCcK3tW9eMmDkDdWLdRhskZrNSNOW5x+q2qFiQvWuU1O1C8hduOuK7nUIDknGR3rnNRi3AgDkfrXTTmclaBzET+U3zLuFaUGoZiUSclRjPtVC6i2OQDxVfBHrXXe5xNWPo7TrtDYwL5OW6BD1bvgDtz71z/AIunQTR2dwqRsq7pAOQpGTjP41oPp81pcs8NwXiKqxwfmweA2R2Fcr4vmW4u7ZWwXVi07KOMZwP8fxrhW53SVtjlLq4aK2kkdiJnG1c9lrj7xssTmuk8W3y3V4WjAVAAoA744zXKzH5q6ImMnqRdelNOOtOamE56VZAqgM1WI0J+UfnUUXHNT7/l2rzmpZSHMF6A1LGjMPlOF71HFH8xzyatpC0nepbsaJXEVBnH8qvW8IYcAgU+1ssj5uPrWva2yKo2jcRzk9BWbkaxhcqwwBRhQcmrsVsxKlucngetaVpaK+35SzN0HrXQ6VoxMgeYZf0HasnM2VOxT0fT2xuYbfb0retbfewiQfKDkmtD7KEjIVAAK0NMsTEoJHJrJ3ZpdJE1rEEQKOKsuCq+lWEhAGaa8RPQ0yQRm4PUe1NuDgdDSojDjtQ6kghjQIrebtOc8VDcTgglTmpbiIAZ9aoSKcE9CKhspIrXByST1rNuVOCQefSr8hAyWGDVC4O7OBikWZc+G69K5zVY+TgdK6a6HXaDWJfxkknFbQepjUjocTfpgnHUVSVmAwDitjV49pyaySM9MV3weh501Zns2r3L6QyAS+XLFGEADDcScccf1rkNZmaCCVbraLhsh2zndu5zUkV2t9O8morI21cRbTjB9TXMa/dky7QAFAx/9esIx1Oly0MO/lLP146VSk+9Ukh3OKY5BNbI52RE5zTB1qTtScCmKwp4C4qeAAHPao1QnFTpE/ZTUtlpFuFAzAEjitqyhLDAIx6AVgLvXqCa0bS8MeNynHtWclc1job0UKKxxlj6elaNlaSTuDjgd+1Z+l3UEjAOcfWuw0+FLgKY2GPrWE7o6oNF/SLBUA9e5NdHbW43gKMCq1jagAYO4+p6Ctu0jVRtTqeprJFSYsdt5hVQvyryfc1oRW4HXrUkCqigCpenSrM7kOwrnilWPNSLnvT+1FguVzFjoKY43DB61eTFRTRjrRYVzMlhzkd+1Z9xCSNycMOorTvXZUO0ZPY1nbm25Yc1nJGsTMmG/ORg+lZsyAHFa10u/JXAasyU4OXGD3qCyjNGB15rMvIQysOD6Vr3DDHFZl7wprSO4pbHDa4m3jP0rnwzDOCK6HXTl2Pv0rnjjJyDXoU9jy6q1O81mS1S28tY2jYDkntXA30hLtg8V0viu8SWf90AFf5yFOQM9s1x87fMT70ooqb1sR5O6k9aB900Hk+9WZjen1pyrk+9OVc8kVYto8kmpbLirjrZQCM9a0ofKH3mUfjVB0256ilgjZ2wil2rN6mq0NuH7NLhAyj3q6NHjkAMbAZ96xba7SCXZcQD8q6XTvsF3HmCVoZOuN1S00aRcWZsumywOMDI7GtTSr2aCRQ5YY9auOlxbAecBLF6jtS/ZUuEDJjaewrNu+5qo22Ot0vV2lAXpgV1GnXPHJ5rzO0LW8ijniuqsbxmK4rJ6GnKd7bzBlyakMgJ681j2c/yqM1oI4696SdyGi2HyPegNjqaqmXHXgU03AxVXFYuxyEnpTpW4xkVm/agO9H2hWz83NFxWHSkGqTjbnH5VPK5K4Uc1HtxjvUNF3MyePOSRjPcVmTqDkGujliBWs6e2BPIyKmxaZzkykH1FZeok4NdTPZjBwK53V4igbirhuKT0OA18/O4PFYPOa3fEfysSe9YQORmvQhseZV3J9SkVXZFbcO59TWQ/wA30qzcMC2ec1XNUSJilAxyfpSAZPWngcgd6TKSFC8AdM1sadaFl4BJqjaQmWdQRXf6Do5dF45rnqTsdVKnc5i5sSq5Za0fDmml2yuAemSK6/UtB2wA7ckVUsbU25BA4zWaqG3skzitZ06WPUXRwS2cj3rS8OaOby5RPKfIPJB4xXdDTrPU2U3S7ZV6MvFdhoGi2Wnwh4hkHncRW8JpnPUpOL0ONvdCutMhVmJlt8c56rWKqm2uN0WREx5HpXrWsXNt9kZHAOR0xXnd3aKjEBkKtkqAckc9DWdRK+hvRTtqQSbGUMvWtLTegIrIkieJenBrW0IFuCO9c0zoR1enMSgzWmrhV96pWKfugcY9qfcEoDikmZvVj5ZyTnOBWfdX4i6Gqt5dFQSWxXP392XbAbNF7lKJqXWtKgJJIql/wkcaLkMd1Y0yPL1NZ01kXP3wKtImUbHY2/itQw8wjHtWlF4ntGIy4B9K82bT5v4G3UyS0uVXBU/nWnKjJ3PVV1q3k+64OfemNqUbHHGfrXlUZu4xhd4PvVpNSuVAWUMGHfFHIguenJKsynaRn0rn9ejzknqKwrDWp0dWfPHXA6ir17qIu1wCAxHNNQIcjzvxU2JVXPJ61ipgr3rU8UNv1IqOijFZyIAoycV1x0Rxz1ZUk5NREcVKVNKkLNkgE0nKxSRCg4NPjGSDWhBpF7NHujtpCPXFI2k3sZBaBxU8yNFBmp4atftFwpC5wa9i0GwCwxsVAPpXnvgC0eOZluImRv8AaGK9Z0oBAF/KuOq9Ttpq0R9xaK0LZXtXMy2BWQ5XA7V3oi3J0qjd2SvnAxU2BSscgtsUGQKnhmnhAEbsAOwrUuImgbDKCKrPIgP3RQm0aKzIjqN05Ab5wOm4ZqpebZcv5KCXPUDFWnlH8AqMQOwLNmnzBZIpXyo9quMbh1qz4dgJfAHeq8sJL4wa6XwzZHg4qHqwbsjbgtgIs+1UtQARCegropYxFAMiuV1yTCELmqkrGUdWcnq9wN5VM1kc4zjJrRaBri6CE8E81cmsVixHCnmygZCiiKNb2OZnNzICUARB3NZU1zawvie4d29FrudO0w3Fxt1BHQHopGBXH+ONF+x6piJNsbD5T61vCBz1ZtbE6S2a2gn/ANJEfTerBgPrTFvyOYJ1kX0kGDXPxwSSFIY1wc4JHevXPD/hWyuNIX7fbguV+8ODW/s00c/tXHc4yDV4wQLmLb7jkVqxz2dzFlQh96xvFmiNo0/+jSF4mOAp64rF0+R1lHlsQG6j3rCULG8Z3OquYIVAYEY/nTEtkCGVRzS2cDSgFgTjk5q3qgW00uaTOAqE1MZO9hyirXPLtWZWv5pGPG7pWU7l2JYke1T3kvmSs2c5NVC/Ndkdjgk9T1LRfhs7sGvpSR/dQY/Wu0svBlhYRgRW6A+pGTXY7oox8uKq3d0m0/MAAOtcDm2egopGLFo0H3WUY+lMk8PWvmK20cHIrL1TxVa2ExSebbWZN8Q7CP7rl/oKI3NLpHW63awJbxTRQhJEIBI7ipNNO5VbNeZap8QVuwI4In2k9WruvDd6Lm0icEYIFFS97jja1kdrA2QAelTNCrdKpWzAgVoQtkbgTilFmbRUls1dcMoNZs+jx7s4wOtdA7hcZBJ9BTZFDqeKpq4JtHNrYxR5woJFQywgr6CtmWERqdpOD61nykAnNZstMzDa5PA5rqPDsIQjI6CsuBAWBFdHpUZW3JI4NOEdSZO6Hak6lSorldVTepz0rpLsbsmsa8hLZB705ijoccsTi4JXrVqFGjkLgnf61pi1CyHinXVswQOg5HWkjS5Si1CaF8SAOg7MM1JfDTNYt/Ku02j3PQ+xqJkE4w4w3rVSa1ePPG5farU2huCZJpWgaPYXG8MZPTc2a6WfU7ZLcLGeAK5EIC2SWGO1KVOMbiapVmZuhHcq64rajORjOO/tVCz0Mb87efpXSWdqzN8o61rRWixLyOalzbBJIxIbQQKARXI/Ee+Fvpot1OGmOPwFeh3S7VYnoK8P8e3/ANs1qRV5SL5F/rV0Y3dzOtKyOYkbOTSoPlGTimY5NTrnaMc12I4Ge5eIfEo0l28w5PoD1rz/AFrxtfXOVhPlIfzqp4x1IX+qERtlFrnbkfNgVyU6fc7qlToht1cy3MheaRnY9yc1XJPc04KewoZNvXPsK3SRzuTYqHGK9b+H97uso0LcgV5EAfTpXc+Abwxt5eeQc1lVjobUZWdj3Kykyo9a1rRiV+cAH2rm9LmDoGB6ity3PIbvjFc0TokaIAz0psnA4pEkySDUU0hC/NV3IKN7IFQjmslH3MfarOpzhVNZls7EtWe7NEtDZ09RJJ+NdVbri1xgVzelx/MMDrXSBitvj2raBnIzLogE4rPm7cVNeSHecVSeYbRk5qJMEhywhjUvkDG0DimwOGPFakCBl6CpQ2c/c6Xk7kGDVOSzkU42k12DQZFVpIQAcim0NSZy/wBjLDmP9KdFpmTllAHpXQPGuOlRNhelTYd2VYbZYY/lAzUVw+Bz+lTzygJWLqd0Ah57daBpGL4v1cabpc0oPzbcL/vHpXhlxK0ru7kszHJJrrPHuq/bLwW6OTHF19zXIOQeMV2U1ZHFVldjB2704A4pYlwRmpFGBxWyMGWXt5fM+6xP0pDbynJ2N+VfRNxpyyuZGtIIlxgJGmAKonTkY4WFR/wGuT2p2qnc8BaFogBg5NQNE2clWGfWveLrw3bzsvmW8ZI77arX3gyC5i2qCvHTGRTVYTonh6rnjHStXw7cm01JCeATg11mrfDu8hy9oySL/dPBrlLzSb3T5MXMEiEd8cVfOpIlQcXc9y0GbfboR1ro4SccGvM/h/q32i1EUjYkj45716PZyAqK5nozpvdGoh+UZ602UZGKSNgcH0qVV3c0IkxLqATXIVvujmmfZ1FxtTtUt2/lXjZPanWnzybzVWKNbTIuRWtcYWPg1UswFA461Ldy4CgDmrWiIZhXjZ3Hp7Vi3EpXgGtnURufA7mqdxbL5OMc4rOSuXEi06cs2K6a0YbATXN2NsyoGwQc1t2zEAZ5qY6BI0wwPIqGbBBNIGwtQSScVTIRDMxGcDms6WWTb8wGatyS9eazLu4UA+tQy0VLy4Kg1x3ifVxZ2UkpOWxtUeprY1K75JY4FeY+Lr43UxAyY0HHPX3rWlC7uTVnyo5m5k82VmJJYnJNVxgEVI7ZyRwMVCp6muy1jgbuSgfNUmFGc5qFGAwT19Kk3A80yWfWqlGjGcYxVORIw/y4qp9muRGFEx+uKoXFle5Oy5P5V5zPRijoYoIzg8E1YFvGfSvPrzWtQ0lwJwHTsV4p8Hjy3UgXLCMn1oTuEotHcz2iOvaue1fTUKMCinPqKit/FtrP9yWNvowq2NThugBkZoYROHm0j7Fe/a7SMRsPvBRgMK6jSb9ZkU56itJraKWMk4+lc6mmyQyXMtucxq3KelKzZpoddazAjrV9JRs4IrjbTUtmFJ9q2rO583pQtCGiDxIWixOgyB1xT9Iu1lRGBznvVi+xPAwPORXIx3x0i9McgIhY8H0q09TSKuj0u2kwvXtS3EqlcnrWBZatFLEGDjp60l1qsSKSXAArS5LgWLqRSxOelV1k851VecnmsNr+W8lItlOzPU10ejWvlgPLy1RfUH7qNmO1XyBxUZQJVnz124FUZ5Sp9jSkZjncjvVS4mIBpzy8ZzWfdT4B5qWxpENzPgHDD3rntUvdh68+1P1TUBGD09+a4PxHrywI6xndKRwPSiMXIblyoTxNrmwGCNv3jdeegrmbw7rfOM98+1Y8txJNM0sjEsTk5rRglWS3Azk9MGu6EbKxx1JczMlwcVEx4H8qvSwfvSGOP61UdVBwDk+varMhinjjrUq7sDGaYgq0kRK5oEz67a2yDjFU7i3wCD+NVLu4miQlZTkCsK416UxtvOCO9cDaO+MWc98Qf3QwMlc9uteTancNJckZOF4HNd/r1+9/cElvlAOK83ujm5kP+0a0pIVVtIVJmUgq2K09P1y/tZQYrh+OzHIrF5JwKuWkJPOM1q4oxUmei6P48dQqXkZ9Ny812um6xZ3ILRvtdhggjrXiUScc9RXo/hmFZUXpnHNZONtjZVO5b12a3tJNwdEJ5VV5zVjQNci6P949Kg1vTFurc4H7wciuURJbeTdHkEHkVLiaQlzHpzaupyOB6VWvVtNQj2zL1HauFGoTOQBz+PStK2vpVx5gOPUUKJ0xs9i6/hy4hJbTr5hGeSpNEWhXchDXVyzAepxmrtjdl+/A96Se9w5wfl+tU0XymxpdnHbFVJ57HtXRW5+Tg5HrXAtq+z727HtUkHiNYT98gehqLWMp07naTTFCfaqF7qKKMFhXL3Piaa4z5EXy/wB41Uiu2eTfcMPpUMxtY6Q37NnrisvVNWWGMktzj1qhe6rFEhCnJx2rz/xHq81xIY0JAbinCDZMpJFnxB4j3l44Tl/XsK464leSQs7Fie5oxlizHoaa2WYnpiuuMUkcs5NsjAA6nk1PCjLyv1xUOM59as2hyvluOT3q0ZsJpt64cHNUiu5vlHHrVyY7HbeM+npUIZeoyDTBhFGB1Aq6kblcrjFV41ywxzn3rs9G0otYIzlVJ5waBHt2rNGIHHfFcktv5ituGQfWui1DmQ5FZrgBTgV5rZ6K2POdeVLEzgdAOM1wEgJY56mvR/FkSyRzlhkiuLtoUkmCsMjNdNLY56u5DpWnm5nUEHb3rom0oxW6yID0/Kta3t4oLRBGgAJwa1JQJITlQFU4CjpVNkJHH2tkxbbjJJzXT6a0ttIrLmrmjWsTzFmXJ37fwrUurOGLYUByDikx3A6ksiBiPm7isq9iikm8xOp+8P61ZvIUhuQEyAe1IyLs3dwahlxdjKlsdrbkOP61LbOFbaxHvWgVByD0xWZdoFyw4IpJnVTnZm3aJblgTgHP51Y8qFWJCqcnpXN207nqQcVeaRiBzV8x1qZLfOrEhQBz0qgYC5+5mpgSTnPNWVbC5wKzcjCpO5nyAouCMUlvBNcPtTJ9farLqJZ41fox5rqoLWG1sz5SAYGeaqKuclSdji9XtBawBFO+VuSfSuL1238nZIDksMH2r1CSFJYWdxlpM5Nec+JECSMgztFaR0MW7o5hucbenWlQhQxJ5PWpfLXc3tURUb/xxWxkxjptXOetEMyjhhnngZwa0ZEXyjx/DWLNxIMcUAa6CKdSGP4HioRpznJRgR9az45HB4Y8Vbink2/epkmlpmnZuE87GM9q9EtBHHbopDMevFeb2d1Kkq7W611EF/MIwPl/WpA//9k=" alt="Shreety waiting outside the door"><i class="tr" style="left:30%;top:52%">💧</i><i class="tr t2" style="left:68%;top:62%">💧</i><span class="bub">😭 Let me in!</span></div>
-    <div class="room"><h2>Happy Birthday, Shreety!</h2><p>You’re 23 now. Come on in.</p></div>
-    <div class="door" id="door"><div class="sign">Decorating in progress<small>No peeking!</small></div><div class="knob"></div></div>
+  <div id="gate">
+    <h1>Knock knock…</h1>
+    <p>Who’s there? Whisper the secret word, Shreety.</p>
+    <form id="gf"><input id="pw" type="password" autocomplete="off" aria-label="Secret word"
+        placeholder="Secret word"><button class="btn" type="submit">Knock</button></form>
+    <div id="err" role="alert"></div>
   </div>
-  <div class="mat">Welcome (after you wait)</div>
-  <div class="cd" id="cd"></div>
-  <p class="hint" id="cdmsg">until the door opens at midnight</p>
-  </div>
-  <div id="inside" data-stage="dark" hidden>
-    <p class="sub" id="inshint"></p>
-    <div class="roomv">
-      <div class="wall"></div><div class="floor"></div>
-      <div class="bunt" id="bunt"></div><div id="balloons"></div>
-      <div class="tbl"></div><span class="snack s1">🍟</span><span class="snack s2">🥨</span>
-      <svg class="cakev" viewBox="0 0 200 190" role="img" aria-label="Birthday cake with candles 2 and 3">
-        <ellipse cx="100" cy="176" rx="92" ry="9" fill="#4A2A6B" opacity=".2"/>
-        <rect x="18" y="112" width="164" height="62" rx="12" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="4"/>
-        <rect x="46" y="64" width="108" height="52" rx="10" fill="#F5B94A" stroke="#4A2A6B" stroke-width="4"/>
-        <path d="M46 82q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 v-8H46z" fill="#fff" stroke="#4A2A6B" stroke-width="3"/>
-        <path d="M18 130 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 v-8H18z" fill="#fff"/>
-        <g class="cdl"><rect x="70" y="28" width="22" height="38" rx="4" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><text x="81" y="55" text-anchor="middle" font-size="22" font-weight="700" font-family="Fredoka,sans-serif" fill="#E8307A">2</text><path class="fl" d="M81 24c-9-8 0-14 0-22 9 6 9 14 0 22z" fill="#FF9F1C" stroke="#F5B94A" stroke-width="1.5"/></g>
-        <g class="cdl"><rect x="108" y="28" width="22" height="38" rx="4" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><text x="119" y="55" text-anchor="middle" font-size="22" font-weight="700" font-family="Fredoka,sans-serif" fill="#E8307A">3</text><path class="fl" d="M119 24c-9-8 0-14 0-22 9 6 9 14 0 22z" fill="#FF9F1C" stroke="#F5B94A" stroke-width="1.5"/></g>
+
+  <div id="app" hidden>
+    <nav id="nav">
+      <button data-t="door" aria-current="true">The Door</button>
+      <button data-t="sikkim">Sikkim Trip</button>
+      <button data-t="home">Home Plans</button>
+      <button data-t="game">Game Zone</button>
+      <button data-t="music">Music Corner</button>
+      <button data-t="photos">Photos</button>
+      <button data-t="wish">Make a Wish</button>
+    </nav>
+    <button class="btn" id="mute" aria-label="Mute music">🔊</button>
+
+    <section class="wrap fit" id="t-door">
+      <div id="outside">
+        <h1>Please wait outside</h1>
+        <p class="sub">You made me wait outside my room. Now you wait outside yours.</p>
+        <div class="scene">
+          <div class="deco" id="deco"><span class="peek" style="left:-28px;top:-14px">🎈</span><span class="peek"
+              style="right:-28px;top:22%;animation-delay:.8s">🎀</span><span class="peek"
+              style="left:-24px;bottom:8%;animation-delay:1.4s">🎉</span></div>
+          <div class="her" id="her"><img
+              src="data:image/jpeg;base64,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"
+              alt="Shreety waiting outside the door"><i class="tr" style="left:30%;top:52%">💧</i><i class="tr t2"
+              style="left:68%;top:62%">💧</i><span class="bub">😭 Let me in!</span></div>
+          <div class="room">
+            <h2>Happy Birthday, Shreety!</h2>
+            <p>You’re 23 now. Come on in.</p>
+          </div>
+          <div class="door" id="door">
+            <div class="sign">Decorating in progress<small>No peeking!</small></div>
+            <div class="knob"></div>
+          </div>
+        </div>
+        <div class="mat">Welcome (after you wait)</div>
+        <div class="cd" id="cd"></div>
+        <p class="hint" id="cdmsg">until the door opens at midnight</p>
+      </div>
+      <div id="inside" data-stage="dark" hidden>
+        <p class="sub" id="inshint"></p>
+        <div class="roomv">
+          <div class="wall"></div>
+          <div class="floor"></div>
+          <div class="bunt" id="bunt"></div>
+          <div id="balloons"></div>
+          <div class="tbl"></div><span class="snack s1">🍟</span><span class="snack s2">🥨</span>
+          <svg class="cakev" viewBox="0 0 200 190" role="img" aria-label="Birthday cake with candles 2 and 3">
+            <ellipse cx="100" cy="176" rx="92" ry="9" fill="#4A2A6B" opacity=".2" />
+            <rect x="18" y="112" width="164" height="62" rx="12" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="4" />
+            <rect x="46" y="64" width="108" height="52" rx="10" fill="#F5B94A" stroke="#4A2A6B" stroke-width="4" />
+            <path d="M46 82q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 q9 14 18 0 v-8H46z" fill="#fff"
+              stroke="#4A2A6B" stroke-width="3" />
+            <path
+              d="M18 130 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 q10 14 20 0 v-8H18z"
+              fill="#fff" />
+            <g class="cdl">
+              <rect x="70" y="28" width="22" height="38" rx="4" fill="#fff" stroke="#4A2A6B" stroke-width="3" /><text
+                x="81" y="55" text-anchor="middle" font-size="22" font-weight="700" font-family="Fredoka,sans-serif"
+                fill="#E8307A">2</text>
+              <path class="fl" d="M81 24c-9-8 0-14 0-22 9 6 9 14 0 22z" fill="#FF9F1C" stroke="#F5B94A"
+                stroke-width="1.5" />
+            </g>
+            <g class="cdl">
+              <rect x="108" y="28" width="22" height="38" rx="4" fill="#fff" stroke="#4A2A6B" stroke-width="3" /><text
+                x="119" y="55" text-anchor="middle" font-size="22" font-weight="700" font-family="Fredoka,sans-serif"
+                fill="#E8307A">3</text>
+              <path class="fl" d="M119 24c-9-8 0-14 0-22 9 6 9 14 0 22z" fill="#FF9F1C" stroke="#F5B94A"
+                stroke-width="1.5" />
+            </g>
+          </svg>
+          <svg class="vase" viewBox="0 -10 70 130" role="img" aria-label="Vase of lilies">
+            <path d="M25 60Q20 30 22 18M38 60Q38 26 38 10M50 60Q56 34 52 22" stroke="#3FB7A5" stroke-width="3"
+              fill="none" />
+            <use href="#lily" x="5" y="1" width="34" height="34" />
+            <use href="#lily" x="21" y="-7" width="34" height="34" />
+            <use href="#lily" x="35" y="5" width="34" height="34" />
+            <path d="M18 60h34l-4 52q-1 6-8 6H30q-7 0-8-6z" fill="#BFE3F5" stroke="#4A2A6B" stroke-width="4" />
+          </svg>
+          <div class="cur l"></div>
+          <div class="cur r"></div>
+          <div class="fairy" id="fairy"></div>
+          <button class="bowbtn" id="bowbtn" aria-label="Untie the big red bow"><svg viewBox="0 0 140 100">
+              <g fill="#D7263D" stroke="#8c1427" stroke-width="3">
+                <path d="M64 56 44 98l16-8 8-28z" />
+                <path d="M76 56 96 98l-16-8-8-28z" />
+                <path d="M70 50C30 0 0 15 8 50c-8 35 22 50 62 0z" />
+                <path d="M70 50C110 0 140 15 132 50c8 35-22 50-62 0z" />
+                <ellipse cx="70" cy="50" rx="13" ry="14" fill="#B01E32" />
+              </g>
+            </svg></button>
+          <div class="dim"></div>
+          <div class="lamp"><span class="glow"></span><span class="shade"></span>
+            <div class="cord" id="cord"><button id="cordb" aria-label="Pull the lamp cord"></button></div>
+          </div>
+        </div>
+        <button class="btn sm" id="relight" hidden>Light the candles again 🕯️</button>
+      </div>
+    </section>
+
+    <section class="wrap" id="t-sikkim" hidden>
+      <h2>Sikkim itinerary</h2>
+      <p class="hint">Add days and the places or plans for each one.</p>
+      <div id="p-sikkim"></div>
+    </section>
+
+    <section class="wrap" id="t-home" hidden>
+      <h2>When I’m back home</h2>
+      <p class="hint">What shall we do when I come home?</p>
+      <div id="p-home"></div>
+    </section>
+
+    <section class="wrap fit" id="t-game" hidden>
+      <div class="gsub" id="gsub"><button data-g="cake" aria-current="true">Cake Catch</button><button
+          data-g="match">Memory Match</button><button data-g="coupon">Coupons</button></div>
+      <div class="gp" id="g-cake">
+        <p class="hint">Catch fries, cake, watermelon and ice cream. Dodge the bugs. Drag or use arrow keys.</p>
+        <canvas id="gc" width="320" height="420"></canvas>
+        <p><b id="sc">Score: 0</b> · <span id="bs">Best: 0</span></p>
+        <button class="btn" id="play">Play (30 seconds)</button>
+      </div>
+      <div class="gp" id="g-match" hidden>
+        <p class="hint">Flip two cards at a time and find all the pairs!</p>
+        <div class="gsub" id="mpairs"><button data-n="6">6 pairs</button><button data-n="8">8 pairs</button><button
+            data-n="10">10 pairs</button><button data-n="12">12 pairs</button></div>
+        <div class="mg" id="mgrid"></div>
+        <p><b id="mmoves">Moves: 0</b> · <span id="mbest"></span></p>
+        <button class="btn" id="mnew">New game</button>
+      </div>
+      <div class="gp" id="g-coupon" hidden>
+        <p class="hint" id="chint"></p>
+        <div class="cprog" id="cprog"></div>
+        <div id="cstat"></div>
+        <div id="scratch" hidden></div>
+        <div id="creveal" aria-live="polite"></div>
+        <div class="row"><button class="btn" id="copen">Get coupon</button><button class="btn alt" id="cmega"
+            hidden>Claim MEGA coupon 👑</button></div>
+        <div class="clist" id="clist"></div>
+      </div>
+    </section>
+
+    <section class="wrap" id="t-music" hidden>
+      <h2>Music corner</h2>
+      <div class="mgrid">
+        <div class="player">
+          <div class="vinyl" id="vinyl"><i>♥</i></div>
+          <div id="np">Press play when you’re ready</div>
+          <input type="range" id="seek" min="0" max="100" value="0" aria-label="Seek">
+          <div class="ctrl"><button class="btn" id="prev" aria-label="Previous song">⏮</button><button class="btn sk"
+              id="back10" aria-label="Back 10 seconds">↺10</button><button class="btn big" id="pp"
+              aria-label="Play or pause">▶</button><button class="btn sk" id="fwd10"
+              aria-label="Forward 10 seconds">10↻</button><button class="btn" id="next"
+              aria-label="Next song">⏭</button></div>
+          <p class="hint">Volume</p><input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume">
+        </div>
+        <aside class="queue" id="queue" aria-label="Up next" hidden>
+          <h3>Up next</h3>
+          <ol id="q"></ol>
+        </aside>
+      </div>
+      <div class="addsong" id="addsong" hidden><b>Want more songs?</b> This playlist is collaborative, so add your own
+        favourites!<br><a class="btn alt sm" id="plink" target="_blank" rel="noopener">Add songs to the playlist</a>
+      </div>
+      <div id="yt">
+        <div id="ytp"></div>
+      </div>
+      <p class="hint" id="nopl" hidden>The playlist isn’t connected yet. Ask Shreety’s friend to add it!</p>
+    </section>
+    <section class="wrap fit" id="t-photos" hidden>
+      <h2>Photo drop 📸</h2>
+      <p class="sub">Add your favourite photos here: cute ones, funny ones, anything you love. They’re going into your
+        birthday surprise, so shh!</p>
+      <div class="pol">
+        <div style="--r:-6deg">🌸</div>
+        <div style="--r:3deg">🍟</div>
+        <div style="--r:-3deg">🎀</div>
+      </div>
+      <a class="btn big2" id="photoLink" target="_blank" rel="noopener">Upload your photos</a>
+      <p class="hint">Opens Google Drive in a new tab.</p>
+    </section>
+    <section class="wrap fit" id="t-wish" hidden>
+      <h2>Make a wish 🕯️</h2>
+      <p class="sub">Type your wish, light the candle, then blow it out.</p>
+      <input id="wtext" maxlength="140" placeholder="Type your wish here" aria-label="Your wish"
+        style="max-width:360px;width:92%">
+      <svg id="candle" class="candle" viewBox="0 0 80 130" role="img" aria-label="Candle">
+        <ellipse cx="40" cy="123" rx="30" ry="6" fill="#4A2A6B" opacity=".2" />
+        <rect x="28" y="58" width="24" height="64" rx="6" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3" />
+        <path d="M28 74q6 8 12 0t12 0" fill="none" stroke="#fff" stroke-width="3" />
+        <rect x="38" y="46" width="4" height="13" fill="#4A2A6B" />
+        <path id="wf" class="wf off" d="M40 8C54 26 52 44 40 47C28 44 26 26 40 8Z" fill="#FF9F1C" stroke="#F5B94A"
+          stroke-width="2" />
       </svg>
-      <svg class="vase" viewBox="0 -10 70 130" role="img" aria-label="Vase of lilies"><path d="M25 60Q20 30 22 18M38 60Q38 26 38 10M50 60Q56 34 52 22" stroke="#3FB7A5" stroke-width="3" fill="none"/><use href="#lily" x="5" y="1" width="34" height="34"/><use href="#lily" x="21" y="-7" width="34" height="34"/><use href="#lily" x="35" y="5" width="34" height="34"/><path d="M18 60h34l-4 52q-1 6-8 6H30q-7 0-8-6z" fill="#BFE3F5" stroke="#4A2A6B" stroke-width="4"/></svg>
-      <div class="cur l"></div><div class="cur r"></div>
-      <div class="fairy" id="fairy"></div>
-      <button class="bowbtn" id="bowbtn" aria-label="Untie the big red bow"><svg viewBox="0 0 140 100"><g fill="#D7263D" stroke="#8c1427" stroke-width="3"><path d="M64 56 44 98l16-8 8-28z"/><path d="M76 56 96 98l-16-8-8-28z"/><path d="M70 50C30 0 0 15 8 50c-8 35 22 50 62 0z"/><path d="M70 50C110 0 140 15 132 50c8 35-22 50-62 0z"/><ellipse cx="70" cy="50" rx="13" ry="14" fill="#B01E32"/></g></svg></button>
-      <div class="dim"></div>
-      <div class="lamp"><span class="glow"></span><span class="shade"></span><div class="cord" id="cord"><button id="cordb" aria-label="Pull the lamp cord"></button></div></div>
-    </div>
-    <button class="btn sm" id="relight" hidden>Light the candles again 🕯️</button>
+      <button class="btn" id="wbtn">Light the candle</button>
+      <div id="wstat" style="font-weight:700"></div>
+      <div id="wdots" style="font-size:1.3rem"></div>
+    </section>
   </div>
-</section>
 
-<section class="wrap" id="t-sikkim" hidden>
-  <h2>Sikkim itinerary</h2><p class="hint">Add days and the places or plans for each one.</p>
-  <div id="p-sikkim"></div>
-</section>
-
-<section class="wrap" id="t-home" hidden>
-  <h2>When I’m back home</h2><p class="hint">What shall we do when I come home?</p>
-  <div id="p-home"></div>
-</section>
-
-<section class="wrap fit" id="t-game" hidden>
-  <div class="gsub" id="gsub"><button data-g="cake" aria-current="true">Cake Catch</button><button data-g="match">Memory Match</button><button data-g="coupon">Coupons</button></div>
-  <div class="gp" id="g-cake">
-    <p class="hint">Catch fries, cake, watermelon and ice cream. Dodge the bugs. Drag or use arrow keys.</p>
-    <canvas id="gc" width="320" height="420"></canvas>
-    <p><b id="sc">Score: 0</b> · <span id="bs">Best: 0</span></p>
-    <button class="btn" id="play">Play (30 seconds)</button>
-  </div>
-  <div class="gp" id="g-match" hidden>
-    <p class="hint">Flip two cards at a time and find all the pairs!</p>
-    <div class="gsub" id="mpairs"><button data-n="6">6 pairs</button><button data-n="8">8 pairs</button><button data-n="10">10 pairs</button><button data-n="12">12 pairs</button></div>
-    <div class="mg" id="mgrid"></div>
-    <p><b id="mmoves">Moves: 0</b> · <span id="mbest"></span></p>
-    <button class="btn" id="mnew">New game</button>
-  </div>
-  <div class="gp" id="g-coupon" hidden>
-    <p class="hint" id="chint"></p>
-    <div class="cprog" id="cprog"></div>
-    <div id="cstat"></div>
-    <div id="scratch" hidden></div><div id="creveal" aria-live="polite"></div>
-    <div class="row"><button class="btn" id="copen">Get coupon</button><button class="btn alt" id="cmega" hidden>Claim MEGA coupon 👑</button></div>
-    <div class="clist" id="clist"></div>
-  </div>
-</section>
-
-<section class="wrap" id="t-music" hidden>
-  <h2>Music corner</h2>
-  <div class="mgrid">
-    <div class="player">
-      <div class="vinyl" id="vinyl"><i>♥</i></div>
-      <div id="np">Press play when you’re ready</div>
-      <input type="range" id="seek" min="0" max="100" value="0" aria-label="Seek">
-      <div class="ctrl"><button class="btn" id="prev" aria-label="Previous song">⏮</button><button class="btn sk" id="back10" aria-label="Back 10 seconds">↺10</button><button class="btn big" id="pp" aria-label="Play or pause">▶</button><button class="btn sk" id="fwd10" aria-label="Forward 10 seconds">10↻</button><button class="btn" id="next" aria-label="Next song">⏭</button></div>
-      <p class="hint">Volume</p><input type="range" id="vol" min="0" max="100" value="70" aria-label="Volume">
-    </div>
-    <aside class="queue" id="queue" aria-label="Up next" hidden><h3>Up next</h3><ol id="q"></ol></aside>
-  </div>
-  <div class="addsong" id="addsong" hidden><b>Want more songs?</b> This playlist is collaborative, so add your own favourites!<br><a class="btn alt sm" id="plink" target="_blank" rel="noopener">Add songs to the playlist</a></div>
-  <div id="yt"><div id="ytp"></div></div>
-  <p class="hint" id="nopl" hidden>The playlist isn’t connected yet. Ask Shreety’s friend to add it!</p>
-</section>
-<section class="wrap fit" id="t-photos" hidden>
-  <h2>Photo drop 📸</h2>
-  <p class="sub">Add your favourite photos here: cute ones, funny ones, anything you love. They’re going into your birthday surprise, so shh!</p>
-  <div class="pol"><div style="--r:-6deg">🌸</div><div style="--r:3deg">🍟</div><div style="--r:-3deg">🎀</div></div>
-  <a class="btn big2" id="photoLink" target="_blank" rel="noopener">Upload your photos</a>
-  <p class="hint">Opens Google Drive in a new tab.</p>
-</section>
-<section class="wrap fit" id="t-wish" hidden>
-  <h2>Make a wish 🕯️</h2>
-  <p class="sub">Type your wish, light the candle, then blow it out.</p>
-  <input id="wtext" maxlength="140" placeholder="Type your wish here" aria-label="Your wish" style="max-width:360px;width:92%">
-  <svg id="candle" class="candle" viewBox="0 0 80 130" role="img" aria-label="Candle"><ellipse cx="40" cy="123" rx="30" ry="6" fill="#4A2A6B" opacity=".2"/><rect x="28" y="58" width="24" height="64" rx="6" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3"/><path d="M28 74q6 8 12 0t12 0" fill="none" stroke="#fff" stroke-width="3"/><rect x="38" y="46" width="4" height="13" fill="#4A2A6B"/><path id="wf" class="wf off" d="M40 8C54 26 52 44 40 47C28 44 26 26 40 8Z" fill="#FF9F1C" stroke="#F5B94A" stroke-width="2"/></svg>
-  <button class="btn" id="wbtn">Light the candle</button>
-  <div id="wstat" style="font-weight:700"></div>
-  <div id="wdots" style="font-size:1.3rem"></div>
-</section>
-</div>
-
-<script src="script.js" defer></script>
+  <script src="script.js" defer></script>
 </body>
+
 </html>

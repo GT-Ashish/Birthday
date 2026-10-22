@@ -10,8 +10,8 @@ const WISH_MAX = 6, WISH_GAP_H = 1.75;   // 6 wishes, 1 hour 45 minutes apart
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzqr5g21fNa6fUiE0OXnQABAZ4uwrkRMgxb5PeeZybyeZEKOdftCnj94mmIpWQO3_1AKA/exec";   // paste your Google Apps Script web app URL here (see setup steps)
 /* ====================== */
 const $ = s => document.querySelector(s);
-const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = { get(k) { try { return localStorage.getItem(k) } catch (e) { return null } }, set(k, v) { try { localStorage.setItem(k, v) } catch (e) { } } };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* Gate */
 $("#gf").addEventListener("submit", e => {
@@ -30,16 +30,16 @@ document.querySelectorAll("#nav button").forEach(b => b.addEventListener("click"
 
 /* Confetti */
 const cv = $("#fx"), cx = cv.getContext("2d"); let parts = [], raf = 0;
-function fit(){ cv.width = innerWidth; cv.height = innerHeight; } fit(); addEventListener("resize", fit);
-function burst(n){
+function fit() { cv.width = innerWidth; cv.height = innerHeight; } fit(); addEventListener("resize", fit);
+function burst(n) {
   if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
-  const cols = ["#FF9EC4","#F5B94A","#3FB7A5","#8A9A3B","#4A2A6B"];
-  for (let i = 0; i < n; i++) parts.push({x: innerWidth/2, y: innerHeight/3, vx: (Math.random()-.5)*14, vy: Math.random()*-12, c: cols[i%5], l: 140, r: 3+Math.random()*4});
+  const cols = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#8A9A3B", "#4A2A6B"];
+  for (let i = 0; i < n; i++) parts.push({ x: innerWidth / 2, y: innerHeight / 3, vx: (Math.random() - .5) * 14, vy: Math.random() * -12, c: cols[i % 5], l: 140, r: 3 + Math.random() * 4 });
   if (!raf) raf = requestAnimationFrame(tick);
 }
-function tick(){
-  cx.clearRect(0,0,cv.width,cv.height); parts = parts.filter(p => p.l > 0);
-  parts.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vy+=.35; p.l--; cx.fillStyle=p.c; cx.fillRect(p.x,p.y,p.r*2,p.r); });
+function tick() {
+  cx.clearRect(0, 0, cv.width, cv.height); parts = parts.filter(p => p.l > 0);
+  parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .35; p.l--; cx.fillStyle = p.c; cx.fillRect(p.x, p.y, p.r * 2, p.r); });
   raf = parts.length ? requestAnimationFrame(tick) : 0;
 }
 
@@ -47,11 +47,11 @@ function tick(){
 const PREVIEW = location.hash === "#open";
 const target = PREVIEW ? new Date(Date.now() - 1) : BIRTHDAY;
 let opened = false;
-const UNITS = ["days","hrs","min","sec"];
+const UNITS = ["days", "hrs", "min", "sec"];
 $("#cd").innerHTML = UNITS.map(u => `<div data-u="${u}"><b>00</b><span>${u}</span></div>`).join("");
-function setUnit(u, n){ const b = $(`#cd [data-u="${u}"] b`), v = String(n).padStart(2, "0"); if (b.textContent !== v) { b.textContent = v; b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } }
-const DECO = ["🎈","🎀","🎉","✨","💖","🎊","🌸","🍰","🎁"];
-function spawnDeco(){
+function setUnit(u, n) { const b = $(`#cd [data-u="${u}"] b`), v = String(n).padStart(2, "0"); if (b.textContent !== v) { b.textContent = v; b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } }
+const DECO = ["🎈", "🎀", "🎉", "✨", "💖", "🎊", "🌸", "🍰", "🎁"];
+function spawnDeco() {
   if (tab !== "door" || document.hidden || matchMedia("(prefers-reduced-motion:reduce)").matches) return;
   const e = document.createElement("span"), side = Math.random() < .5 ? -1 : 1, mx = Math.max(130, Math.min(260, innerWidth / 2 - 30));
   e.className = "d"; e.textContent = DECO[Math.floor(Math.random() * DECO.length)];
@@ -62,7 +62,7 @@ function spawnDeco(){
   $("#deco").appendChild(e);
 }
 setInterval(spawnDeco, 600);
-function updateCd(){
+function updateCd() {
   const d = target - Date.now();
   if (d <= 0) {
     $("#cd").hidden = true; $("#cdmsg").textContent = "The door is open. Happy Birthday, Shreety!";
@@ -76,16 +76,16 @@ function updateCd(){
 updateCd(); setInterval(updateCd, 1000);
 
 /* Planner */
-function planner(root, key, ph){
-  let days = []; try { days = JSON.parse(store.get(key) || "[]"); } catch(e){}
+function planner(root, key, ph) {
+  let days = []; try { days = JSON.parse(store.get(key) || "[]"); } catch (e) { }
   const save = () => store.set(key, JSON.stringify(days));
   const planText = () => days.map(d => d.t + "\n" + d.items.map(x => " - " + x).join("\n")).join("\n\n") || "(empty)";
   root.innerHTML = `<div class="add"><input class="dn" placeholder="${ph}" aria-label="New day"><button class="btn sm" data-a="day">Add day</button></div><div class="days"></div><button class="btn alt" data-a="copy">Copy itinerary</button>`;
   const box = root.querySelector(".days");
-  const draw = () => { box.innerHTML = days.map((d,i) => `<div class="day"><h3>${esc(d.t)}<button class="x" data-a="rmd" data-i="${i}" aria-label="Remove day">×</button></h3><ul>${d.items.map((it,j) => `<li>${esc(it)}<button class="x" data-a="rmi" data-i="${i}" data-j="${j}" aria-label="Remove item">×</button></li>`).join("")}</ul><div class="add"><input data-in="${i}" placeholder="Add a plan or place" aria-label="Add plan"><button class="btn sm" data-a="item" data-i="${i}">Add</button></div></div>`).join("") || `<p class="hint">Nothing yet. Add your first day!</p>`; };
+  const draw = () => { box.innerHTML = days.map((d, i) => `<div class="day"><h3>${esc(d.t)}<button class="x" data-a="rmd" data-i="${i}" aria-label="Remove day">×</button></h3><ul>${d.items.map((it, j) => `<li>${esc(it)}<button class="x" data-a="rmi" data-i="${i}" data-j="${j}" aria-label="Remove item">×</button></li>`).join("")}</ul><div class="add"><input data-in="${i}" placeholder="Add a plan or place" aria-label="Add plan"><button class="btn sm" data-a="item" data-i="${i}">Add</button></div></div>`).join("") || `<p class="hint">Nothing yet. Add your first day!</p>`; };
   root.addEventListener("click", e => {
     const b = e.target.closest("[data-a]"); if (!b) return; const a = b.dataset.a, i = +b.dataset.i;
-    if (a === "day") { const inp = root.querySelector(".dn"), v = inp.value.trim(); if (!v) return; days.push({t: v, items: []}); inp.value = ""; }
+    if (a === "day") { const inp = root.querySelector(".dn"), v = inp.value.trim(); if (!v) return; days.push({ t: v, items: [] }); inp.value = ""; }
     else if (a === "item") { const inp = root.querySelector(`[data-in="${i}"]`), v = inp.value.trim(); if (!v) return; days[i].items.push(v); }
     else if (a === "rmd") days.splice(i, 1);
     else if (a === "rmi") days[i].items.splice(+b.dataset.j, 1);
@@ -104,19 +104,21 @@ planner($("#p-home"), "plan_home", "Day 1: Cafe date");
 
 /* Cake game */
 const gc = $("#gc"), g = gc.getContext("2d"); let G = null, best = +(store.get("best") || 0); $("#bs").textContent = "🏆 High score: " + best;
-const GOOD = ["🍟","🍰","🍉","🍦","🎀","🧡"], BAD = ["🐛"];
-function startGame(){ G = {x:160, s:0, t:30, it:[], sp:0, last:performance.now()}; $("#play").textContent = "Playing…"; requestAnimationFrame(loop); }
-function stopGame(){ G = null; $("#play").textContent = "Play (30 seconds)"; }
-function move(cx_){ if (!G) return; const r = gc.getBoundingClientRect(); G.x = Math.max(30, Math.min(290, (cx_ - r.left) * 320 / r.width)); }
+const GOOD = ["🍟", "🍰", "🍉", "🍦", "🎀", "🧡"], BAD = ["🐛"];
+function startGame() { G = { x: 160, s: 0, t: 30, it: [], sp: 0, last: performance.now() }; $("#play").textContent = "Playing…"; requestAnimationFrame(loop); }
+function stopGame() { G = null; $("#play").textContent = "Play (30 seconds)"; }
+function move(cx_) { if (!G) return; const r = gc.getBoundingClientRect(); G.x = Math.max(30, Math.min(290, (cx_ - r.left) * 320 / r.width)); }
 gc.addEventListener("pointermove", e => move(e.clientX)); gc.addEventListener("pointerdown", e => move(e.clientX));
 addEventListener("keydown", e => { if (G && e.key === "ArrowLeft") G.x = Math.max(30, G.x - 25); if (G && e.key === "ArrowRight") G.x = Math.min(290, G.x + 25); });
-function loop(now){
+function loop(now) {
   if (!G) return; const dt = Math.min(.05, (now - G.last) / 1000); G.last = now; G.t -= dt; G.sp -= dt;
-  if (G.sp <= 0) { G.sp = .55; const bad = Math.random() < .2; G.it.push({x: 25 + Math.random()*270, y: -20, v: 110 + Math.random()*110, e: bad ? BAD[0] : GOOD[Math.floor(Math.random()*GOOD.length)], bad}); }
-  g.clearRect(0,0,320,420); g.textAlign = "center"; g.font = "30px serif";
-  G.it = G.it.filter(o => { o.y += o.v * dt; g.fillText(o.e, o.x, o.y);
+  if (G.sp <= 0) { G.sp = .55; const bad = Math.random() < .2; G.it.push({ x: 25 + Math.random() * 270, y: -20, v: 110 + Math.random() * 110, e: bad ? BAD[0] : GOOD[Math.floor(Math.random() * GOOD.length)], bad }); }
+  g.clearRect(0, 0, 320, 420); g.textAlign = "center"; g.font = "30px serif";
+  G.it = G.it.filter(o => {
+    o.y += o.v * dt; g.fillText(o.e, o.x, o.y);
     if (o.y > 355 && o.y < 400 && Math.abs(o.x - G.x) < 38) { G.s = Math.max(0, G.s + (o.bad ? -3 : 1)); return false; }
-    return o.y < 440; });
+    return o.y < 440;
+  });
   g.font = "44px serif"; g.fillText("🧺", G.x, 405);
   g.font = "bold 16px sans-serif"; g.fillStyle = "#4A2A6B"; g.textAlign = "left"; g.fillText("Time: " + Math.ceil(Math.max(0, G.t)), 10, 22);
   $("#sc").textContent = "Score: " + G.s;
@@ -131,7 +133,7 @@ $("#photoLink").href = PHOTO_LINK;
 if (PLAYLIST_LINK) { $("#plink").href = PLAYLIST_LINK; $("#addsong").hidden = false; }
 if (!YT_PLAYLIST) $("#nopl").hidden = false;
 else { const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s); }
-function renderQueue(){
+function renderQueue() {
   if (!ids.length) return;
   const cur = yp.getPlaylistIndex ? yp.getPlaylistIndex() : -1;
   $("#queue").hidden = false;
@@ -141,32 +143,38 @@ function renderQueue(){
   }).join("");
   const c = $("#q .cur"); if (c) $("#queue").scrollTop = Math.max(0, c.offsetTop - 70);
 }
-function loadQueue(){
+function loadQueue() {
   if (!yp || !yp.getPlaylist) return;
   const l = yp.getPlaylist();
   if (l && l.length && l.join() !== ids.join()) {
-    ids = l; try { yp.setLoop(true); } catch (e) {}
-    ids.forEach(id => { if (!titles[id] && !tried[id]) { tried[id] = 1;
-      fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + id)).then(r => r.json()).then(j => { titles[id] = j.title; renderQueue(); }).catch(() => {}); } });
+    ids = l; try { yp.setLoop(true); } catch (e) { }
+    ids.forEach(id => {
+      if (!titles[id] && !tried[id]) {
+        tried[id] = 1;
+        fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + id)).then(r => r.json()).then(j => { titles[id] = j.title; renderQueue(); }).catch(() => { });
+      }
+    });
   }
   renderQueue();
 }
 window.onYouTubeIframeAPIReady = () => {
-  yp = new YT.Player("ytp", {height:"200", width:"200", playerVars:{listType:"playlist", list:YT_PLAYLIST, playsinline:1, controls:0}, events:{
-    onReady: () => { yp.setVolume(70); loadQueue(); setTimeout(loadQueue, 1500); },
-    onStateChange: e => {
-      playing = e.data === 1; $("#vinyl").classList.toggle("on", playing); $("#pp").textContent = playing ? "⏸" : "▶";
-      clearTimeout(resumeT);
-      if (playing) {
-        ytOn = true; bg();
-        const d = yp.getVideoData(), idx = yp.getPlaylistIndex ? yp.getPlaylistIndex() : -1;
-        if (d && d.title) { $("#np").textContent = d.title; if (ids[idx]) titles[ids[idx]] = d.title; }
-      } else {
-        resumeT = setTimeout(() => { ytOn = false; bg(); }, 5000);   // lullaby waits 5 seconds after the music stops
+  yp = new YT.Player("ytp", {
+    height: "200", width: "200", playerVars: { listType: "playlist", list: YT_PLAYLIST, playsinline: 1, controls: 0 }, events: {
+      onReady: () => { yp.setVolume(70); loadQueue(); setTimeout(loadQueue, 1500); },
+      onStateChange: e => {
+        playing = e.data === 1; $("#vinyl").classList.toggle("on", playing); $("#pp").textContent = playing ? "⏸" : "▶";
+        clearTimeout(resumeT);
+        if (playing) {
+          ytOn = true; bg();
+          const d = yp.getVideoData(), idx = yp.getPlaylistIndex ? yp.getPlaylistIndex() : -1;
+          if (d && d.title) { $("#np").textContent = d.title; if (ids[idx]) titles[ids[idx]] = d.title; }
+        } else {
+          resumeT = setTimeout(() => { ytOn = false; bg(); }, 5000);   // lullaby waits 5 seconds after the music stops
+        }
+        loadQueue();
       }
-      loadQueue();
     }
-  }});
+  });
 };
 $("#pp").addEventListener("click", () => { if (!yp || !yp.playVideo) return; playing ? yp.pauseVideo() : yp.playVideo(); });
 $("#next").addEventListener("click", () => yp && yp.nextVideo && yp.nextVideo());
@@ -181,30 +189,36 @@ setInterval(() => { if (yp && playing && yp.getDuration) { const d = yp.getDurat
 
 /* Background music: synthesized in the browser, starts after the password tap */
 let tab = "door", ytOn = false, partyOn = false; const _ = null;
-const AU = {ctx:null, out:null, tune:null, step:0, next:0, muted:false};
+const AU = { ctx: null, out: null, tune: null, step: 0, next: 0, muted: false };
 const MIDI = n => 440 * Math.pow(2, (n - 69) / 12);
 const TUNES = {
-  party: {bpm: 118, lines: [
-    {t:"triangle", v:.09, d:1.6, n:[72,_,76,79,_,84,79,_, 77,_,81,84,_,81,77,_, 74,_,79,83,_,79,74,_, 72,_,76,79,84,_,_,_]},
-    {t:"triangle", v:.10, d:1.4, n:[48,_,_,_,52,_,_,_, 53,_,_,_,57,_,_,_, 55,_,_,_,59,_,_,_, 48,_,_,_,52,_,55,_]},
-    {t:"sine", v:.05, d:.7, n:[84,_,_,_,_,_,88,_, 89,_,_,_,_,_,93,_, 86,_,_,_,_,_,91,_, 84,_,_,_,88,_,_,_]}
-  ]},
-  sweet:{bpm:100, lines:[
-    {t:"sine", v:.09, d:2.2, n:[60,64,67,72,67,64,67,64, 57,60,64,69,64,60,64,60, 53,57,60,65,60,57,60,57, 55,59,62,67,62,59,62,59]},
-    {t:"triangle", v:.08, d:1.6, n:[79,_,76,_,79,_,84,_, 81,_,79,_,76,_,_,_, 76,_,79,_,81,_,79,_, 79,_,74,_,76,_,_,_]}
-  ]},
-  game:{bpm:150, lines:[
-    {t:"square", v:.035, d:.9, n:[72,76,79,76,72,76,79,84, 71,74,79,74,71,74,79,83, 69,72,76,72,69,72,76,81, 65,69,72,69,65,69,72,77]},
-    {t:"triangle", v:.10, d:1.6, n:[48,_,48,_,48,_,48,_, 43,_,43,_,43,_,43,_, 45,_,45,_,45,_,45,_, 41,_,41,_,41,_,41,_]}
-  ]}
+  party: {
+    bpm: 118, lines: [
+      { t: "triangle", v: .09, d: 1.6, n: [72, _, 76, 79, _, 84, 79, _, 77, _, 81, 84, _, 81, 77, _, 74, _, 79, 83, _, 79, 74, _, 72, _, 76, 79, 84, _, _, _] },
+      { t: "triangle", v: .10, d: 1.4, n: [48, _, _, _, 52, _, _, _, 53, _, _, _, 57, _, _, _, 55, _, _, _, 59, _, _, _, 48, _, _, _, 52, _, 55, _] },
+      { t: "sine", v: .05, d: .7, n: [84, _, _, _, _, _, 88, _, 89, _, _, _, _, _, 93, _, 86, _, _, _, _, _, 91, _, 84, _, _, _, 88, _, _, _] }
+    ]
+  },
+  sweet: {
+    bpm: 100, lines: [
+      { t: "sine", v: .09, d: 2.2, n: [60, 64, 67, 72, 67, 64, 67, 64, 57, 60, 64, 69, 64, 60, 64, 60, 53, 57, 60, 65, 60, 57, 60, 57, 55, 59, 62, 67, 62, 59, 62, 59] },
+      { t: "triangle", v: .08, d: 1.6, n: [79, _, 76, _, 79, _, 84, _, 81, _, 79, _, 76, _, _, _, 76, _, 79, _, 81, _, 79, _, 79, _, 74, _, 76, _, _, _] }
+    ]
+  },
+  game: {
+    bpm: 150, lines: [
+      { t: "square", v: .035, d: .9, n: [72, 76, 79, 76, 72, 76, 79, 84, 71, 74, 79, 74, 71, 74, 79, 83, 69, 72, 76, 72, 69, 72, 76, 81, 65, 69, 72, 69, 65, 69, 72, 77] },
+      { t: "triangle", v: .10, d: 1.6, n: [48, _, 48, _, 48, _, 48, _, 43, _, 43, _, 43, _, 43, _, 45, _, 45, _, 45, _, 45, _, 41, _, 41, _, 41, _, 41, _] }
+    ]
+  }
 };
-function tone(f, t, dur, type, vol){
+function tone(f, t, dur, type, vol) {
   const o = AU.ctx.createOscillator(), g = AU.ctx.createGain();
   o.type = type; o.frequency.value = f;
   g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
   o.connect(g); g.connect(AU.out); o.start(t); o.stop(t + dur + .05);
 }
-function sched(){
+function sched() {
   if (!AU.tune) return;
   const T = TUNES[AU.tune], sd = 60 / T.bpm / 2;
   if (AU.next < AU.ctx.currentTime) AU.next = AU.ctx.currentTime + .05;
@@ -214,18 +228,18 @@ function sched(){
     AU.next += sd; AU.step++;
   }
 }
-function bg(){
+function bg() {
   if (!AU.ctx) return;
   if (AU.ctx.resume) AU.ctx.resume();
   const want = (AU.muted || ytOn) ? null : (tab === "game" ? "game" : partyOn ? null : "sweet"); hb();
   if (want !== AU.tune) { AU.tune = want; AU.step = 0; AU.next = AU.ctx.currentTime + .15; }
 }
-function startAudio(){
+function startAudio() {
   try {
     const C = window.AudioContext || window.webkitAudioContext;
     AU.ctx = new C(); AU.out = AU.ctx.createGain(); AU.out.gain.value = .9; AU.out.connect(AU.ctx.destination);
     setInterval(sched, 80); bg();
-  } catch (e) {}
+  } catch (e) { }
 }
 $("#mute").addEventListener("click", e => { AU.muted = !AU.muted; e.currentTarget.textContent = AU.muted ? "🔇" : "🔊"; e.currentTarget.setAttribute("aria-label", AU.muted ? "Unmute music" : "Mute music"); bg(); });
 document.addEventListener("visibilitychange", () => { if (AU.ctx) { document.hidden ? AU.ctx.suspend() : AU.ctx.resume(); } });
@@ -238,14 +252,14 @@ document.querySelectorAll("#gsub button").forEach(b => b.addEventListener("click
 }));
 
 /* Memory match */
-const POOL = ["🍉","🐱","🍦","🍟","🎀","🌸","💄","💅","🪞","👛","🧸","🍓","🦋","🧁","🎧","🌷"];
+const POOL = ["🍉", "🐱", "🍦", "🍟", "🎀", "🌸", "💄", "💅", "🪞", "👛", "🧸", "🍓", "🦋", "🧁", "🎧", "🌷"];
 let mm = null, mn = +(store.get("mn") || 6);
 const showBest = () => { const b = +(store.get("mbest" + mn) || 0); $("#mbest").textContent = b ? "Best: " + b + " moves" : ""; };
-function newMatch(){
+function newMatch() {
   const f = [...POOL].sort(() => Math.random() - .5).slice(0, mn), a = [...f, ...f].sort(() => Math.random() - .5);
   const cols = mn <= 8 ? 4 : mn === 10 ? 5 : 6, g = $("#mgrid");
   g.style.setProperty("--c", cols); g.style.setProperty("--r", Math.ceil(a.length / cols));
-  mm = {a, open: [], done: 0, moves: 0, lock: false};
+  mm = { a, open: [], done: 0, moves: 0, lock: false };
   g.innerHTML = a.map((x, i) => `<button class="mc" data-i="${i}" aria-label="Card ${i + 1}">✦</button>`).join("");
   $("#mmoves").textContent = "Moves: 0"; showBest();
   document.querySelectorAll("#mpairs button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.n === mn));
@@ -265,31 +279,31 @@ $("#mnew").addEventListener("click", newMatch); newMatch();
 
 /* Coupons */
 const PRIZES = [
-  {e:"🍟", t:"Peri peri fries", s:"One serving of your favourite fries, on me."},
-  {e:"💬", t:"Vent session", s:"A full session. I’ll just listen, no judging."},
-  {e:"🎬", t:"Movie night", s:"You pick the movie, I bring the snacks."}];
-const MEGA = {e:"👑", t:"MEGA WISH", s:"Any wish you want. I’ll grant it (if it’s feasible)!", mega:true};
-let cp = {list: [], last: 0, mega: false}; try { cp = Object.assign(cp, JSON.parse(store.get("cpn") || "{}")); } catch (e) {}
+  { e: "🍟", t: "Peri peri fries", s: "One serving of your favourite fries, on me." },
+  { e: "💬", t: "Vent session", s: "A full session. I’ll just listen, no judging." },
+  { e: "🎬", t: "Movie night", s: "You pick the movie, I bring the snacks." }];
+const MEGA = { e: "👑", t: "MEGA WISH", s: "Any wish you want. I’ll grant it (if it’s feasible)!", mega: true };
+let cp = { list: [], last: 0, mega: false }; try { cp = Object.assign(cp, JSON.parse(store.get("cpn") || "{}")); } catch (e) { }
 const hm = h => { const m = Math.round(h * 60), a = Math.floor(m / 60), b = m % 60; return (a ? a + " h " : "") + (b ? b + " min" : ""); };
 $("#chint").textContent = `A new coupon every ${hm(COUPON_HOURS)}. Collect ${MEGA_AFTER} to unlock the MEGA coupon!`;
 const fmt = ms => { const t = Math.ceil(ms / 1000); return [Math.floor(t / 3600), Math.floor(t % 3600 / 60), t % 60].map(v => String(v).padStart(2, "0")).join(":"); };
-const when = ts => new Date(ts).toLocaleString([], {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
-function drawList(){
+const when = ts => new Date(ts).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+function drawList() {
   $("#clist").innerHTML = cp.list.slice().reverse().map(c => `<div class="cc${c.mega ? " mega" : ""}"><span>${c.e} ${esc(c.t)}<small>${when(c.ts)}</small></span><button class="btn sm" data-d="${c.id}">Download</button></div>`).join("");
 }
-function tickCp(){
+function tickCp() {
   const n = cp.list.filter(c => !c.mega).length, left = cp.last + COUPON_HOURS * 36e5 - Date.now(), ready = left <= 0;
   $("#cstat").textContent = ready ? "A coupon is ready to open!" : "Next coupon in " + fmt(left);
   $("#copen").disabled = !ready || !!cp.pending; $("#cmega").hidden = !(n >= MEGA_AFTER && !cp.mega); $("#cmega").disabled = !!cp.pending; if (cp.pending) $("#cstat").textContent = "Scratch your coupon to reveal it!";
   $("#cprog").textContent = "🎟️".repeat(Math.min(n, MEGA_AFTER)) + "⚪".repeat(Math.max(0, MEGA_AFTER - n)) + " → 👑" + (cp.mega ? " ✅" : "");
 }
-function addCoupon(pz){
-  const ts = Date.now(), c = {id: "SHR-" + ts.toString(36).toUpperCase().slice(-5), e: pz.e, t: pz.t, s: pz.s, ts, mega: !!pz.mega};
+function addCoupon(pz) {
+  const ts = Date.now(), c = { id: "SHR-" + ts.toString(36).toUpperCase().slice(-5), e: pz.e, t: pz.t, s: pz.s, ts, mega: !!pz.mega };
   cp.list.push(c); if (pz.mega) cp.mega = true;
   store.set("cpn", JSON.stringify(cp)); drawList(); tickCp(); burst(140); track("coupon", c.e + " " + c.t);
   $("#creveal").textContent = "You got: " + c.e + " " + c.t + "!";
 }
-function showScratch(pz){
+function showScratch(pz) {
   const box = $("#scratch"); box.hidden = false; $("#creveal").textContent = "";
   box.innerHTML = `<div class="sc-card${pz.mega ? " mega" : ""}"><span class="sce">${pz.e}</span><b>${esc(pz.t)}</b><small>${esc(pz.s)}</small></div><canvas id="scv" width="300" height="150" aria-label="Scratch to reveal your coupon"></canvas>`;
   const cv = $("#scv"), x = cv.getContext("2d"), gr = x.createLinearGradient(0, 0, 300, 150);
@@ -297,14 +311,16 @@ function showScratch(pz){
   x.fillStyle = gr; x.fillRect(0, 0, 300, 150); x.fillStyle = "#4A2A6B"; x.textAlign = "center"; x.font = "700 24px Fredoka, sans-serif"; x.fillText("Scratch here ✨", 150, 84);
   let down = false, done = false;
   const sc = e => { if (!down || done) return; const r = cv.getBoundingClientRect(); x.globalCompositeOperation = "destination-out"; x.beginPath(); x.arc((e.clientX - r.left) * 300 / r.width, (e.clientY - r.top) * 150 / r.height, 17, 0, 7); x.fill(); };
-  const check = () => { if (done) return; const d = x.getImageData(0, 0, 300, 150).data; let c = 0; for (let i = 3; i < d.length; i += 16) if (d[i] === 0) c++;
-    if (c / (d.length / 16) > .5) { done = true; cv.style.transition = "opacity .5s"; cv.style.opacity = 0; setTimeout(() => cv.remove(), 500); const q = cp.pending; cp.pending = null; if (q) addCoupon(q); } };
+  const check = () => {
+    if (done) return; const d = x.getImageData(0, 0, 300, 150).data; let c = 0; for (let i = 3; i < d.length; i += 16) if (d[i] === 0) c++;
+    if (c / (d.length / 16) > .5) { done = true; cv.style.transition = "opacity .5s"; cv.style.opacity = 0; setTimeout(() => cv.remove(), 500); const q = cp.pending; cp.pending = null; if (q) addCoupon(q); }
+  };
   cv.addEventListener("pointerdown", e => { down = true; cv.setPointerCapture(e.pointerId); sc(e); });
   cv.addEventListener("pointermove", sc);
   cv.addEventListener("pointerup", () => { down = false; check(); });
   cv.addEventListener("pointercancel", () => { down = false; });
 }
-function getCoupon(pz, normal){
+function getCoupon(pz, normal) {
   cp.pending = pz; if (normal) cp.last = Date.now(); store.set("cpn", JSON.stringify(cp)); showScratch(pz); tickCp();
 }
 $("#copen").addEventListener("click", () => {
@@ -312,8 +328,8 @@ $("#copen").addEventListener("click", () => {
   getCoupon(pool[Math.floor(Math.random() * pool.length)], true);
 });
 $("#cmega").addEventListener("click", () => getCoupon(MEGA, false));
-function rr(x, a, b, w, h, r){ x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
-function download(c){
+function rr(x, a, b, w, h, r) { x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath(); }
+function download(c) {
   const w = 900, h = 420, k = document.createElement("canvas"); k.width = w; k.height = h; const x = k.getContext("2d");
   x.fillStyle = "#BFE3F5"; x.fillRect(0, 0, w, h);
   x.fillStyle = c.mega ? "#F5B94A" : "#FFFFFF"; rr(x, 20, 20, w - 40, h - 40, 28); x.fill(); x.lineWidth = 6; x.strokeStyle = "#4A2A6B"; x.stroke();
@@ -337,10 +353,10 @@ const SID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).sl
 let visitNo = 0, secs = 0;
 if (location.hash === "#me") store.set("noTrack", "1");   // open the site once with #me on the end to stop counting your own visits
 if (location.hash === "#track") store.set("noTrack", "");
-function post(o){ if (!SHEET_URL || store.get("noTrack") || location.hostname !== "gt-ashish.github.io") return; try { fetch(SHEET_URL, {method: "POST", mode: "no-cors", keepalive: true, body: JSON.stringify(o)}).catch(() => {}); } catch (e) {} }
-function track(type, detail){ post({type, detail: typeof detail === "string" ? detail : JSON.stringify(detail || "")}); }
-const sendSess = () => post({type: "session", sid: SID, visit: visitNo, sec: secs});
-function startTracking(){
+function post(o) { if (!SHEET_URL || store.get("noTrack") || location.hostname !== "gt-ashish.github.io") return; try { fetch(SHEET_URL, { method: "POST", mode: "no-cors", keepalive: true, body: JSON.stringify(o) }).catch(() => { }); } catch (e) { } }
+function track(type, detail) { post({ type, detail: typeof detail === "string" ? detail : JSON.stringify(detail || "") }); }
+const sendSess = () => post({ type: "session", sid: SID, visit: visitNo, sec: secs });
+function startTracking() {
   visitNo = (+store.get("visits") || 0) + 1; store.set("visits", visitNo); track("visit", "Visit #" + visitNo);
   setInterval(() => { if (!document.hidden) secs++; }, 1000);   // counts only while the page is visible
   setInterval(sendSess, 30000);
@@ -349,9 +365,9 @@ function startTracking(){
 }
 
 /* Make a wish */
-let ws = {list: [], last: 0}; try { ws = Object.assign(ws, JSON.parse(store.get("wishes") || "{}")); } catch (e) {}
+let ws = { list: [], last: 0 }; try { ws = Object.assign(ws, JSON.parse(store.get("wishes") || "{}")); } catch (e) { }
 let lit = false, curWish = "";
-function wtick(){
+function wtick() {
   const n = ws.list.length, left = ws.last + WISH_GAP_H * 36e5 - Date.now(), btn = $("#wbtn"), inp = $("#wtext"), st = $("#wstat");
   $("#wdots").textContent = "🕯️".repeat(n) + "⚪".repeat(Math.max(0, WISH_MAX - n));
   $("#candle").classList.toggle("lit", lit);
@@ -360,13 +376,13 @@ function wtick(){
   else if (n > 0 && left > 0) { st.textContent = "Next wish in " + fmt(left); btn.textContent = "Light the candle"; btn.disabled = true; inp.disabled = true; }
   else { st.textContent = "Wish " + (n + 1) + " of " + WISH_MAX; btn.textContent = "Light the candle"; btn.disabled = false; inp.disabled = false; }
 }
-function wishAction(){
+function wishAction() {
   if (!lit) {
     curWish = $("#wtext").value.trim(); if (!curWish) { $("#wstat").textContent = "Type your wish first 💭"; return; }
     lit = true; $("#wf").classList.remove("off");
   } else {
     lit = false; $("#wf").classList.add("off"); const ts = Date.now();
-    ws.list.push({w: curWish, ts}); ws.last = ts; store.set("wishes", JSON.stringify(ws));
+    ws.list.push({ w: curWish, ts }); ws.last = ts; store.set("wishes", JSON.stringify(ws));
     track("wish", "Wish " + ws.list.length + ": " + curWish); $("#wtext").value = ""; burst(150);
   }
   wtick();
@@ -386,22 +402,22 @@ const HINTS = {
   lit: "Lights on! Now untie the big red bow 🎀 (drag it or tap it)",
   open: "Surprise! Tap the candles to blow them out (and pop those poppers 🎉) 🎂"
 };
-function sfx(a){ if (!AU.ctx || AU.muted) return; a.forEach((x, i) => tone(x[0], AU.ctx.currentTime + i * 0.09, x[1], "triangle", 0.12)); }
-function setStage(s, quiet){
+function sfx(a) { if (!AU.ctx || AU.muted) return; a.forEach((x, i) => tone(x[0], AU.ctx.currentTime + i * 0.09, x[1], "triangle", 0.12)); }
+function setStage(s, quiet) {
   stage = s; ins.dataset.stage = s; if (!PREVIEW) store.set("rstage", s);
   $("#inshint").textContent = HINTS[s];
   if (s === "open") { partyOn = true; bg(); if (!quiet) { burst(200); track("room", "curtain untied"); } }
 }
-function enterRoom(){
+function enterRoom() {
   if (!ins.hidden) return;
   $("#outside").hidden = true; ins.hidden = false; if (PREVIEW || !store.get("navok")) $("#nav").hidden = true; $("#t-door").classList.add("inroom");
   const saved = PREVIEW ? null : store.get("rstage");
   setStage(saved || "dark", true);
 }
-function lightsOn(){ if (stage !== "dark") return; setStage("lit"); sfx([[880, .08], [1320, .12]]); track("room", "lights on"); }
-function untie(){ if (stage !== "lit") return; $("#bowbtn").classList.add("undone"); sfx([[523, .1], [659, .1], [784, .1], [1047, .2]]); setTimeout(() => setStage("open"), 400); }
+function lightsOn() { if (stage !== "dark") return; setStage("lit"); sfx([[880, .08], [1320, .12]]); track("room", "lights on"); }
+function untie() { if (stage !== "lit") return; $("#bowbtn").classList.add("undone"); sfx([[523, .1], [659, .1], [784, .1], [1047, .2]]); setTimeout(() => setStage("open"), 400); }
 
-function pull(el, move, done){
+function pull(el, move, done) {
   let sx = 0, sy = 0, on = false, mv = 0;
   el.addEventListener("pointerdown", (e) => { on = true; sx = e.clientX; sy = e.clientY; mv = 0; el.setPointerCapture(e.pointerId); });
   el.addEventListener("pointermove", (e) => { if (!on) return; const dx = e.clientX - sx, dy = e.clientY - sy; mv = Math.max(mv, Math.hypot(dx, dy)); move(dx, dy); });
@@ -415,7 +431,7 @@ pull($("#cordb"), (dx, dy) => { pp = Math.max(0, Math.min(60, dy)); cord.style.s
   (tap) => { if (tap || pp > 35) { cord.style.setProperty("--p", "50px"); setTimeout(() => { lightsOn(); cord.style.setProperty("--p", "0px"); }, 160); } else { pp = 0; cord.style.setProperty("--p", "0px"); } });
 let bd = 0;
 pull(bow, (dx, dy) => { bd = Math.hypot(dx, dy); bow.style.setProperty("--bx", Math.max(-60, Math.min(60, dx)) + "px"); bow.style.setProperty("--by", Math.max(-30, Math.min(60, dy)) + "px"); bow.style.setProperty("--br", dx / 6 + "deg"); },
-  (tap) => { if (tap || bd > 40) untie(); else { bd = 0; ["--bx", "--by", "--br"].forEach((p) => bow.style.removeProperty(p)); } });
+  (tap) => { if (tap || bd > 40) untie(); else { bd = 0;["--bx", "--by", "--br"].forEach((p) => bow.style.removeProperty(p)); } });
 
 /* Decorations (built once) */
 (() => {
@@ -440,26 +456,26 @@ $("#relight").addEventListener("click", () => { document.querySelectorAll(".fl")
 
 /* Party song: hbd.mp3 (plays after the bow is untied; pauses for mute, YouTube, game tab, hidden page) */
 const hbd = new Audio("hbd.mp3"); hbd.loop = true; hbd.preload = "auto";
-function hb(){
+function hb() {
   const on = partyOn && !AU.muted && !ytOn && tab !== "game" && !document.hidden;
-  if (on) { if (hbd.paused) hbd.play().catch(() => {}); } else if (!hbd.paused) hbd.pause();
+  if (on) { if (hbd.paused) hbd.play().catch(() => { }); } else if (!hbd.paused) hbd.pause();
 }
 document.addEventListener("visibilitychange", hb);
-document.addEventListener("pointerdown", hb, {passive: true});   // retries if the browser blocked autoplay after a refresh
+document.addEventListener("pointerdown", hb, { passive: true });   // retries if the browser blocked autoplay after a refresh
 
 
 /* Party decor: photo balloons, long curly ribbons, gifts, sparkles */
 (() => {
   const room = document.querySelector(".roomv");
-  const B = [["bnA",14,16,30],["hk2",2,8,28],["b3",1,38,26],["b7",24,40,24],["hk3",9,48,22],["b1",25,8,20],
-             ["kf",75,12,38],["k1",89,40,26],["b5",67,42,22],["hk4",60,6,20],["hk5",90,8,22],["b2",82,50,20]];
+  const B = [["bnA", 14, 16, 30], ["hk2", 2, 8, 28], ["b3", 1, 38, 26], ["b7", 24, 40, 24], ["hk3", 9, 48, 22], ["b1", 25, 8, 20],
+  ["kf", 75, 12, 38], ["k1", 89, 40, 26], ["b5", 67, 42, 22], ["hk4", 60, 6, 20], ["hk5", 90, 8, 22], ["b2", 82, 50, 20]];
   $("#balloons").innerHTML = B.map((b, i) => `<img class="bi" src="balloons/${b[0]}.png" alt="" style="--l:${b[1]}%;--t:${b[2]}%;--s:${b[3]};--dl:${(i * .18).toFixed(2)}s">`).join("");
   $("#balloons").addEventListener("click", (e) => { const b = e.target.closest(".bi"); if (!b || b.classList.contains("pop")) return; b.classList.add("pop"); sfx([[1500, .04], [900, .06]]); burst(25); setTimeout(() => b.remove(), 320); });
-  const RC = ["#FF9EC4","#F5B94A","#3FB7A5","#c9a0ff","#D7263D","#BFE3F5","#FF9EC4","#F5B94A"];
+  const RC = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#D7263D", "#BFE3F5", "#FF9EC4", "#F5B94A"];
   const curl = (amp, w) => { let d = ""; for (let i = 0; i <= 90; i++) { const t = i / 90, p = t * w; d += (i ? "L" : "M") + (20 + amp * Math.sqrt(t) * Math.sin(p)).toFixed(1) + " " + (190 * t + amp * .7 * Math.cos(p) - amp * .7).toFixed(1); } return d; };
-  const X = [2,8,14,20,78,84,90,97], S = [55,42,60,38,40,58,44,52];
+  const X = [2, 8, 14, 20, 78, 84, 90, 97], S = [55, 42, 60, 38, 40, 58, 44, 52];
   room.insertAdjacentHTML("beforeend", X.map((x, i) => `<svg class="rib" viewBox="0 0 40 200" style="left:${x}%;--s:${S[i]};--d:${(i * .13).toFixed(2)}s"><path d="${curl(11 + i % 3 * 2, 34 + i % 4 * 4)}" stroke="${RC[i]}"/></svg>`).join(""));
-  const G = [["🎁",3,"13%"],["🎀",9,"12%"],["🎁",84,"13%"],["🎁",91,"12%"]];
+  const G = [["🎁", 3, "13%"], ["🎀", 9, "12%"], ["🎁", 84, "13%"], ["🎁", 91, "12%"]];
   room.insertAdjacentHTML("beforeend", G.map((g) => `<span class="gift" style="--l:${g[1]}%;--b:${g[2]}">${g[0]}</span>`).join(""));
   let sp = ""; for (let i = 0; i < 12; i++) sp += `<span class="spk" style="--l:${6 + i * 8 + (i % 3) * 2}%;--t:${8 + (i * 37) % 55}%;--d:${(i * .23).toFixed(2)}s">✨</span>`;
   room.insertAdjacentHTML("beforeend", sp);
@@ -472,15 +488,16 @@ document.addEventListener("pointerdown", hb, {passive: true});   // retries if t
   const cols = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#8A9A3B", "#6EC6F0"]; let cum = 0, li = 0;
   $("#bunt").innerHTML = `<div class="bn"><svg viewBox="0 0 100 110" preserveAspectRatio="none"><path d="M0 2Q50 80 100 2"/></svg><div class="bnf">${[...T].map((ch, i) => {
     const u = 2 * (cum + W[i] / 2) / tot - 1; cum += W[i]; const y = ((1 - u * u) * 38 + 2).toFixed(1);
-    return ch === " " ? '<span class="fl2 sp"></span>' : `<span class="fl2" style="--i:${i};--y:${y}px;--c:${cols[li++ % 6]}">${ch}</span>`; }).join("")}</div></div>`;
+    return ch === " " ? '<span class="fl2 sp"></span>' : `<span class="fl2" style="--i:${i};--y:${y}px;--c:${cols[li++ % 6]}">${ch}</span>`;
+  }).join("")}</div></div>`;
 
   const cvs = $("#fx");
-  function popSfx(){ if (!AU.ctx || AU.muted) return; const c = AU.ctx, b = c.createBuffer(1, c.sampleRate * .15, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); const s = c.createBufferSource(), g = c.createGain(); g.gain.value = .5; s.buffer = b; s.connect(g); g.connect(AU.out); s.start(); }
-  function popper(el, dir){
+  function popSfx() { if (!AU.ctx || AU.muted) return; const c = AU.ctx, b = c.createBuffer(1, c.sampleRate * .15, c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3); const s = c.createBufferSource(), g = c.createGain(); g.gain.value = .5; s.buffer = b; s.connect(g); g.connect(AU.out); s.start(); }
+  function popper(el, dir) {
     popSfx(); el.classList.remove("fired"); void el.offsetWidth; el.classList.add("fired");
     if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
     const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * .25, pc = ["#FF9EC4", "#F5B94A", "#3FB7A5", "#c9a0ff", "#D7263D", "#BFE3F5"];
-    for (let i = 0; i < 70; i++) { const a = (-90 + dir * Math.random() * 55) * Math.PI / 180, sp = 9 + Math.random() * 10; parts.push({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c: pc[i % 6], l: 120 + Math.random() * 50, r: 3 + Math.random() * 4}); }
+    for (let i = 0; i < 70; i++) { const a = (-90 + dir * Math.random() * 55) * Math.PI / 180, sp = 9 + Math.random() * 10; parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c: pc[i % 6], l: 120 + Math.random() * 50, r: 3 + Math.random() * 4 }); }
     if (!raf) raf = requestAnimationFrame(tick);
   }
   room.insertAdjacentHTML("beforeend", [[3, 1], [11, 1], [89, -1], [81, -1]].map((p) => `<button class="pp" style="--l:${p[0]}%;--f:${p[1]}" data-d="${p[1]}" aria-label="Pop the party popper">🎉</button>`).join(""));
@@ -494,17 +511,17 @@ document.addEventListener("pointerdown", hb, {passive: true});   // retries if t
 
   let cuts = 0; const MAXC = 6, SLOT = [3, 12, 21, 74, 83, 92];
   const SL = '<svg class="slc" viewBox="0 0 100 90"><ellipse cx="50" cy="80" rx="46" ry="9" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="54" width="60" height="22" rx="4" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="34" width="60" height="22" rx="4" fill="#F5B94A" stroke="#4A2A6B" stroke-width="3"/><path d="M20 38q7 10 14 0t13 0t13 0t14 0v-8H20z" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><circle cx="50" cy="24" r="7" fill="#D7263D" stroke="#4A2A6B" stroke-width="3"/></svg>';
-  function cutCake(){
+  function cutCake() {
     if (cuts >= MAXC) return;
     const cake = document.querySelector(".cakev"), cr = cake.getBoundingClientRect(), rr = room.getBoundingClientRect();
     const k = document.createElement("span"); k.className = "knife"; k.textContent = "🔪"; k.style.left = cr.left - rr.left + cr.width / 2 + "px"; k.style.top = cr.top - rr.top + "px"; room.appendChild(k);
-    k.animate([{transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0}, {opacity: 1, offset: .25}, {transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1}], {duration: 650, easing: "ease-in"}).onfinish = () => k.remove();
+    k.animate([{ transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0 }, { opacity: 1, offset: .25 }, { transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1 }], { duration: 650, easing: "ease-in" }).onfinish = () => k.remove();
     setTimeout(() => {
       const x = 172 - cuts * 22, ln = document.createElementNS("http://www.w3.org/2000/svg", "path");
       ln.setAttribute("d", `M${x} 112V174` + (x < 154 && x > 46 ? `M${x} 64V112` : "")); ln.setAttribute("stroke", "#4A2A6B"); ln.setAttribute("stroke-width", "4"); ln.setAttribute("fill", "none"); cake.appendChild(ln);
       room.insertAdjacentHTML("beforeend", SL.replace('class="slc"', `class="slc" style="--l:${SLOT[cuts]}%"`)); const el = room.lastElementChild;
       const er = el.getBoundingClientRect(), ex = er.left + er.width / 2, ey = er.top + er.height / 2, dx = cr.left + cr.width / 2 - ex, dy = cr.top + cr.height * .6 - ey, mx = rr.left + rr.width / 2 - ex, my = rr.top + rr.height * .5 - ey;
-      el.animate([{transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65}, {transform: "none", opacity: 1}], {duration: 1700, easing: "ease-in-out"});
+      el.animate([{ transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0 }, { transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5 }, { transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65 }, { transform: "none", opacity: 1 }], { duration: 1700, easing: "ease-in-out" });
       sfx([[660, .08], [880, .1]]); setTimeout(() => burst(40), 800);
     }, 450);
     cuts++; $("#goon").hidden = false;
@@ -538,15 +555,15 @@ document.addEventListener("pointerdown", hb, {passive: true});   // retries if t
   /* 3. Gifts: tap -> middle finger pops out */
   const GL = [1.5, 7.5, 88, 93];
   room.querySelectorAll(".gift").forEach((g, i) => { g.style.setProperty("--l", GL[i] + "%"); g.setAttribute("role", "button"); g.tabIndex = 0; g.setAttribute("aria-label", "Open the gift"); });
-  function giftPop(g){
+  function giftPop(g) {
     const r = g.getBoundingClientRect(), rr = room.getBoundingClientRect();
     const f = document.createElement("span"); f.className = "fng"; f.textContent = "🖕";
     f.style.left = r.left - rr.left + r.width / 2 + "px"; f.style.top = r.top - rr.top + "px"; room.appendChild(f);
-    f.animate([{transform: "translate(-50%,-30%) scale(.2) rotate(-20deg)", opacity: 0},
-               {transform: "translate(-50%,-160%) scale(1.5) rotate(8deg)", opacity: 1, offset: .35},
-               {transform: "translate(-50%,-200%) scale(1.5) rotate(-6deg)", opacity: 1, offset: .75},
-               {transform: "translate(-50%,-260%) scale(1.2)", opacity: 0}], {duration: 1500, easing: "ease-out"}).onfinish = () => f.remove();
-    g.animate([{transform: "rotate(0)"}, {transform: "rotate(-14deg) scale(1.2)"}, {transform: "rotate(10deg) scale(1.1)"}, {transform: "none"}], {duration: 350});
+    f.animate([{ transform: "translate(-50%,-30%) scale(.2) rotate(-20deg)", opacity: 0 },
+    { transform: "translate(-50%,-160%) scale(1.5) rotate(8deg)", opacity: 1, offset: .35 },
+    { transform: "translate(-50%,-200%) scale(1.5) rotate(-6deg)", opacity: 1, offset: .75 },
+    { transform: "translate(-50%,-260%) scale(1.2)", opacity: 0 }], { duration: 1500, easing: "ease-out" }).onfinish = () => f.remove();
+    g.animate([{ transform: "rotate(0)" }, { transform: "rotate(-14deg) scale(1.2)" }, { transform: "rotate(10deg) scale(1.1)" }, { transform: "none" }], { duration: 350 });
     sfx([[330, .07], [220, .12]]); track("gift", "tapped");
   }
   room.addEventListener("click", (e) => { const g = e.target.closest(".gift"); if (g) giftPop(g); });
@@ -555,10 +572,10 @@ document.addEventListener("pointerdown", hb, {passive: true});   // retries if t
   /* 4. Cake that really disappears where it is cut */
   const cake = room.querySelector(".cakev");
   const mk = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
-  const mask = mk("mask", {id: "cakemask", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 200, height: 190});
-  mask.appendChild(mk("rect", {x: 0, y: 0, width: 200, height: 190, fill: "#fff"}));
+  const mask = mk("mask", { id: "cakemask", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 200, height: 190 });
+  mask.appendChild(mk("rect", { x: 0, y: 0, width: 200, height: 190, fill: "#fff" }));
   const defs = mk("defs", {}); defs.appendChild(mask); cake.insertBefore(defs, cake.firstChild);
-  const grp = mk("g", {mask: "url(#cakemask)"});
+  const grp = mk("g", { mask: "url(#cakemask)" });
   [...cake.children].filter((n) => /^(rect|path)$/i.test(n.tagName)).forEach((n) => grp.appendChild(n));
   cake.insertBefore(grp, cake.querySelector(".cdl"));
   const cdls = cake.querySelectorAll(".cdl");
@@ -567,24 +584,24 @@ document.addEventListener("pointerdown", hb, {passive: true});   // retries if t
   const oldBtn = $("#cutbtn"), nb = oldBtn.cloneNode(true); oldBtn.replaceWith(nb);
   let cuts = 0, L = 18, R = 182; const MAXC = 6, STEP = 164 / MAXC, SLOT = [18, 29, 40, 51, 62, 73];
   const SL = '<svg class="slc" viewBox="0 0 100 90"><ellipse cx="50" cy="80" rx="46" ry="9" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="54" width="60" height="22" rx="4" fill="#FF9EC4" stroke="#4A2A6B" stroke-width="3"/><rect x="20" y="34" width="60" height="22" rx="4" fill="#F5B94A" stroke="#4A2A6B" stroke-width="3"/><path d="M20 38q7 10 14 0t13 0t13 0t14 0v-8H20z" fill="#fff" stroke="#4A2A6B" stroke-width="3"/><circle cx="50" cy="24" r="7" fill="#D7263D" stroke="#4A2A6B" stroke-width="3"/></svg>';
-  function cutCake(){
+  function cutCake() {
     if (cuts >= MAXC) return;
     const cr = cake.getBoundingClientRect(), rr = room.getBoundingClientRect(), fromRight = cuts % 2 === 0;
     const sx = cr.left + cr.width * ((fromRight ? R - STEP / 2 : L + STEP / 2) / 200);
     const k = document.createElement("span"); k.className = "knife"; k.textContent = "🔪";
     k.style.left = sx - rr.left + "px"; k.style.top = cr.top - rr.top + cr.height * .3 + "px"; room.appendChild(k);
-    k.animate([{transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0}, {opacity: 1, offset: .25}, {transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1}], {duration: 650, easing: "ease-in"}).onfinish = () => k.remove();
+    k.animate([{ transform: "translate(-50%,-90%) rotate(-15deg)", opacity: 0 }, { opacity: 1, offset: .25 }, { transform: "translate(-50%,70%) rotate(-15deg)", opacity: 1 }], { duration: 650, easing: "ease-in" }).onfinish = () => k.remove();
     const myCut = cuts; cuts++;
     setTimeout(() => {
       /* remove that part of the cake */
-      if (fromRight) { const x1 = R - STEP; mask.appendChild(mk("rect", {x: x1, y: 0, width: 260, height: 190, fill: "#000"})); R = x1; }
-      else { const x2 = L + STEP; mask.appendChild(mk("rect", {x: -60, y: 0, width: x2 + 60, height: 190, fill: "#000"})); L = x2; }
+      if (fromRight) { const x1 = R - STEP; mask.appendChild(mk("rect", { x: x1, y: 0, width: 260, height: 190, fill: "#000" })); R = x1; }
+      else { const x2 = L + STEP; mask.appendChild(mk("rect", { x: -60, y: 0, width: x2 + 60, height: 190, fill: "#000" })); L = x2; }
       if (L > 68) cdls[0].style.display = "none";
       if (R < 130) cdls[1].style.display = "none";
       /* the slice flies to the middle, then onto the table */
       room.insertAdjacentHTML("beforeend", SL.replace('class="slc"', `class="slc" style="--l:${SLOT[myCut]}%"`)); const el = room.lastElementChild;
       const er = el.getBoundingClientRect(), ex = er.left + er.width / 2, ey = er.top + er.height / 2, dx = sx - ex, dy = cr.top + cr.height * .6 - ey, mx = rr.left + rr.width / 2 - ex, my = rr.top + rr.height * .45 - ey;
-      el.animate([{transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5}, {transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65}, {transform: "none", opacity: 1}], {duration: 1700, easing: "ease-in-out"});
+      el.animate([{ transform: `translate(${dx}px,${dy}px) scale(.2) rotate(-20deg)`, opacity: 0 }, { transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .5 }, { transform: `translate(${mx}px,${my}px) scale(2.6) rotate(6deg)`, opacity: 1, offset: .65 }, { transform: "none", opacity: 1 }], { duration: 1700, easing: "ease-in-out" });
       sfx([[660, .08], [880, .1]]); setTimeout(() => burst(40), 800);
     }, 450);
     $("#goon").hidden = false;
@@ -711,7 +728,7 @@ I'd like to wish you one more time
   // Preload first 12 photos for instant smooth floating
   photoPool.slice(0, 12).forEach((src) => { const im = new Image(); im.src = src; });
 
-  function spawnPhoto(){
+  function spawnPhoto() {
     if (!running || !photoPool.length) return;
     const src = photoPool[photoIdx % photoPool.length];
     photoIdx++;
@@ -746,13 +763,13 @@ I'd like to wish you one more time
     setTimeout(() => { card.remove(); }, 5200);
   }
 
-  function startPhotos(){
+  function startPhotos() {
     stopPhotos();
     spawnPhoto();
     photoTimer = setInterval(spawnPhoto, 1700);
   }
 
-  function stopPhotos(){
+  function stopPhotos() {
     clearInterval(photoTimer);
     photoTimer = 0;
     if (photoBox) photoBox.innerHTML = "";
@@ -767,7 +784,7 @@ I'd like to wish you one more time
     txt.split(/\s+/).forEach((w) => {
       const s = document.createElement("span"), m = w.match(/^\*(.+?)\*(.*)$/);
       s.className = "w" + (m ? " i" : ""); s.textContent = m ? m[1] + m[2] : w;
-      p.appendChild(s); words.push({s, p});
+      p.appendChild(s); words.push({ s, p });
     });
     ltc.appendChild(p);
   });
@@ -776,13 +793,13 @@ I'd like to wish you one more time
   let seen = false, running = false, ti = 0, tm = 0, timers = [], mode = "type";
   const reveal = (w) => { w.p.style.display = ""; w.s.classList.add("on"); };
   const showAll = () => { words.forEach(reveal); ti = words.length; };
-  function finish(){
+  function finish() {
     mode = "done";
     ltb.style.display = "";
     ltb.textContent = "Close 💖";
     burst(90);
   }
-  function step(){
+  function step() {
     if (ti >= words.length) { finish(); return; }
     const w = words[ti++]; reveal(w); ltc.scrollTop = ltc.scrollHeight;
     const t = w.s.textContent.trim(), lastInP = ti >= words.length || words[ti].p !== w.p;
@@ -790,7 +807,7 @@ I'd like to wish you one more time
     const isComma = /[,;:]$/.test(t);
     tm = setTimeout(step, 210 + (isPunct ? 650 : isComma ? 300 : 0) + (lastInP ? 950 : 0));
   }
-  function openLetter(instant){
+  function openLetter(instant) {
     if (running) return; running = true; seen = true;
     timers.forEach(clearTimeout); clearTimeout(tm); timers = [];
     st.className = "ltst"; lt.classList.add("on");
@@ -806,7 +823,7 @@ I'd like to wish you one more time
     at(3100, () => { st.classList.add("read"); startPhotos(); });
     at(4200, step);
   }
-  function closeLetter(){
+  function closeLetter() {
     timers.forEach(clearTimeout); clearTimeout(tm); showAll();
     stopPhotos();
     lt.classList.remove("on"); $("#letterbtn").hidden = false;

@@ -49,7 +49,7 @@ c += r"""
 .pc p{margin:0 0 .55em;font-family:'Quicksand',sans-serif;font-weight:600}
 .pc p.em{font-family:'Fredoka',sans-serif;font-size:clamp(1.25rem,2.8vh,1.45rem);color:#d81b60;font-style:normal;font-weight:700;margin-top:.8em;margin-bottom:.5em;text-shadow:0 0 20px rgba(255,158,196,.5)}
 .w{display:none}
-.w.on{display:inline-block;animation:wi .45s cubic-bezier(.2,.8,.2,1) both}
+.w.on{display:inline-block;margin:0 .18em;animation:wi .45s cubic-bezier(.2,.8,.2,1) both}
 @keyframes wi{from{opacity:0;transform:translateY(5px) scale(.92);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
 .pc .sg{font-family:Fredoka,sans-serif;font-size:1.2rem;color:var(--plum);text-align:right}
 .pf{flex:none;padding:12px;text-align:center;border-top:2px dashed rgba(232,48,122,.25);background:rgba(255,255,255,.6)}
@@ -231,7 +231,7 @@ I'd like to wish you one more time
     let txt = para.trim(); if (txt[0] === "~") { txt = txt.slice(1); p.className = "em"; }
     txt.split(/\s+/).forEach((w) => {
       const s = document.createElement("span"), m = w.match(/^\*(.+?)\*(.*)$/);
-      s.className = "w" + (m ? " i" : ""); s.textContent = (m ? m[1] + m[2] : w) + " ";
+      s.className = "w" + (m ? " i" : ""); s.textContent = m ? m[1] + m[2] : w;
       p.appendChild(s); words.push({s, p});
     });
     ltc.appendChild(p);
